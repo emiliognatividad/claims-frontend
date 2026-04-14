@@ -192,7 +192,7 @@ export default function Dashboard({ token, user, onLogout }) {
                 onSelectCase={setSelectedCase}
                 onNewCase={() => setShowNewCase(true)}
                 priorityFilter={priorityFilter}
-                onPriorityFilter={(p) => setPriorityFilter(p)}
+                onPriorityFilter={(p) => { setPriorityFilter(p); setPage('cases'); }}
               />
             </>
           )}
