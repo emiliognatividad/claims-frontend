@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CaseDetail from './CaseDetail';
+import NewCase from './NewCase';
 
 const API = 'http://localhost:8000';
 
@@ -25,7 +26,9 @@ export default function Dashboard({ token, user, onLogout }) {
   const [summary, setSummary] = useState(null);
   const [page, setPage] = useState('dashboard');
   const [selectedCase, setSelectedCase] = useState(null);
+  const [showNewCase, setShowNewCase] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [priorityFilter, setPriorityFilter] = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -37,6 +40,21 @@ export default function Dashboard({ token, user, onLogout }) {
     setCases(casesRes.data);
     setSummary(summaryRes.data);
   };
+
+  if (showNewCase) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
+        <Sidebar page={page} setPage={(p) => { setPage(p); setShowNewCase(false); }} onLogout={onLogout} user={user} />
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          <NewCase
+            token={token}
+            onBack={() => setShowNewCase(false)}
+            onCreated={() => { setShowNewCase(false); fetchData(); }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (selectedCase) {
     return (
@@ -92,7 +110,7 @@ export default function Dashboard({ token, user, onLogout }) {
                     style={{
                       background: 'white', borderRadius: 12,
                       padding: '16px 18px', border: '1px solid #e0e4f0',
-                      cursor: 'pointer', transition: 'border-color 0.15s'
+                      cursor: 'pointer'
                     }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = '#2563eb'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#e0e4f0'}
@@ -168,17 +186,30 @@ export default function Dashboard({ token, user, onLogout }) {
                 </div>
               </div>
 
-              <CasesTable cases={cases.slice(0, 5)} title="Recent cases" onSelectCase={setSelectedCase} />
+              <CasesTable
+                cases={cases.slice(0, 5)}
+                title="Recent cases"
+                onSelectCase={setSelectedCase}
+                onNewCase={() => setShowNewCase(true)}
+                priorityFilter={priorityFilter}
+                onPriorityFilter={(p) => setPriorityFilter(p)}
+              />
             </>
           )}
 
           {page === 'cases' && (
             <CasesTable
-              cases={statusFilter ? cases.filter(c => c.status === statusFilter) : cases}
-              title={statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : 'All cases'}
+              cases={cases.filter(c =>
+                (!statusFilter || c.status === statusFilter) &&
+                (!priorityFilter || c.priority === priorityFilter)
+              )}
+              title={statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : priorityFilter ? `${priorityFilter} priority cases` : 'All cases'}
               onSelectCase={setSelectedCase}
               statusFilter={statusFilter}
-              onClearFilter={() => setStatusFilter(null)}
+              priorityFilter={priorityFilter}
+              onClearFilter={() => { setStatusFilter(null); setPriorityFilter(null); }}
+              onNewCase={() => setShowNewCase(true)}
+              onPriorityFilter={(p) => setPriorityFilter(p)}
             />
           )}
         </div>
@@ -230,26 +261,37 @@ function Sidebar({ page, setPage, onLogout, user }) {
   );
 }
 
-function CasesTable({ cases, title, onSelectCase, statusFilter, onClearFilter }) {
+function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter }) {
   return (
     <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
       <div style={{
         padding: '14px 18px', borderBottom: '1px solid #f0f0f0',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{title}</span>
-          {statusFilter && (
+          {(statusFilter || priorityFilter) && (
             <button onClick={onClearFilter} style={{
               background: 'none', border: 'none', color: '#94a3b8',
               fontSize: 12, cursor: 'pointer', textDecoration: 'underline'
             }}>Clear filter</button>
           )}
         </div>
-        <button style={{
-          background: '#2563eb', color: 'white', border: 'none',
-          padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500
-        }}>+ New case</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {['high', 'medium', 'low'].map(p => (
+            <button key={p} onClick={() => onPriorityFilter(priorityFilter === p ? null : p)} style={{
+              padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, cursor: 'pointer',
+              background: priorityFilter === p ? (p === 'high' ? '#fef2f2' : p === 'medium' ? '#fff7ed' : '#f0fdf4') : '#f8fafc',
+              color: priorityFilter === p ? (p === 'high' ? '#dc2626' : p === 'medium' ? '#c2410c' : '#16a34a') : '#64748b',
+              border: `1px solid ${priorityFilter === p ? (p === 'high' ? '#fecaca' : p === 'medium' ? '#fed7aa' : '#bbf7d0') : '#e0e4f0'}`
+            }}>{p}</button>
+          ))}
+          <button onClick={onNewCase} style={{
+            background: '#2563eb', color: 'white', border: 'none',
+            padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500,
+            marginLeft: 4
+          }}>+ New case</button>
+        </div>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
         <thead>
