@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import CaseDetail from './CaseDetail';
 
 const API = 'http://localhost:8000';
 
 const statusColors = {
-  open: { bg: '#eff6ff', color: '#3b82f6' },
-  in_review: { bg: '#fef9c3', color: '#ca8a04' },
-  pending_approval: { bg: '#fef9c3', color: '#ca8a04' },
+  open: { bg: '#eff6ff', color: '#1d4ed8' },
+  in_review: { bg: '#fefce8', color: '#a16207' },
+  pending_approval: { bg: '#fff7ed', color: '#c2410c' },
   escalated: { bg: '#fef2f2', color: '#dc2626' },
   approved: { bg: '#f0fdf4', color: '#16a34a' },
   resolved: { bg: '#f0fdf4', color: '#16a34a' },
@@ -19,14 +20,14 @@ const priorityColors = {
   low: '#22c55e',
 };
 
-export default function Dashboard({ token, onLogout }) {
+export default function Dashboard({ token, user, onLogout }) {
   const [cases, setCases] = useState([]);
   const [summary, setSummary] = useState(null);
   const [page, setPage] = useState('dashboard');
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     const [casesRes, summaryRes] = await Promise.all([
@@ -37,114 +38,148 @@ export default function Dashboard({ token, onLogout }) {
     setSummary(summaryRes.data);
   };
 
-  return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      {/* Sidebar */}
-      <div style={{
-        width: 220,
-        background: 'var(--dark)',
-        color: '#ccc',
-        padding: '24px 0',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #2a2a4a' }}>
-          <span style={{ color: 'var(--purple)', fontWeight: 700, fontSize: 16 }}>Claims</span>
-          <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}> Platform</span>
-        </div>
-        <nav style={{ marginTop: 16 }}>
-          {['dashboard', 'cases'].map(item => (
-            <div
-              key={item}
-              onClick={() => setPage(item)}
-              style={{
-                padding: '10px 20px',
-                fontSize: 13,
-                cursor: 'pointer',
-                borderLeft: page === item ? '3px solid var(--purple)' : '3px solid transparent',
-                background: page === item ? '#2a2a4a' : 'transparent',
-                color: page === item ? 'white' : '#ccc',
-                textTransform: 'capitalize'
-              }}
-            >
-              {item}
-            </div>
-          ))}
-        </nav>
-        <div style={{ marginTop: 'auto', padding: '0 20px' }}>
-          <button
-            onClick={onLogout}
-            style={{
-              width: '100%',
-              padding: '8px',
-              background: 'transparent',
-              border: '1px solid #2a2a4a',
-              color: '#ccc',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontSize: 13
-            }}
-          >
-            Sign out
-          </button>
+  if (selectedCase) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
+        <Sidebar page={page} setPage={(p) => { setPage(p); setSelectedCase(null); }} onLogout={onLogout} user={user} />
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          <CaseDetail
+            token={token}
+            caseId={selectedCase}
+            onBack={() => { setSelectedCase(null); fetchData(); }}
+          />
         </div>
       </div>
+    );
+  }
 
-      {/* Main */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* Topbar */}
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
+      <Sidebar page={page} setPage={setPage} onLogout={onLogout} user={user} />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{
-          background: 'white',
-          padding: '16px 28px',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+          background: 'white', padding: '14px 24px',
+          borderBottom: '1px solid #e0e4f0',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
-          <h1 style={{ fontSize: 16, fontWeight: 600, textTransform: 'capitalize' }}>{page}</h1>
-          <div style={{
-            background: 'var(--light-purple)',
-            color: 'var(--purple)',
-            padding: '6px 14px',
-            borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 500
-          }}>
-            Logistics Claims
+          <h1 style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textTransform: 'capitalize' }}>{page}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 12, color: '#94a3b8' }}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+            <div style={{
+              background: '#eff6ff', color: '#1d4ed8',
+              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500
+            }}>
+              {user?.role || 'user'} · Logistics Claims
+            </div>
           </div>
         </div>
 
-        <div style={{ padding: '24px 28px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {page === 'dashboard' && summary && (
             <>
-              {/* Stat cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
                 {[
-                  { label: 'Total cases', value: summary.total, sub: '' },
-                  { label: 'Open', value: summary.open, sub: '', color: '#3b82f6' },
-                  { label: 'Escalated', value: summary.escalated, sub: 'needs attention', color: '#ef4444' },
-                  { label: 'Resolved', value: summary.resolved, sub: '', color: '#22c55e' },
+                  { label: 'Total cases', value: summary.total, sub: '+3 this week', subColor: '#2563eb', filter: null },
+                  { label: 'Open', value: summary.open, color: '#2563eb', sub: 'awaiting assignment', subColor: '#94a3b8', filter: 'open' },
+                  { label: 'Escalated', value: summary.escalated, color: '#ef4444', sub: 'SLA breached', subColor: '#ef4444', filter: 'escalated' },
+                  { label: 'Resolved', value: summary.resolved, color: '#16a34a', sub: 'closed successfully', subColor: '#16a34a', filter: 'resolved' },
                 ].map((card, i) => (
-                  <div key={i} style={{
-                    background: 'white',
-                    borderRadius: 10,
-                    padding: '18px 20px',
-                    border: '1px solid var(--border)'
-                  }}>
-                    <div style={{ fontSize: 12, color: 'var(--gray)', marginBottom: 8 }}>{card.label}</div>
-                    <div style={{ fontSize: 26, fontWeight: 600, color: card.color || 'var(--dark)' }}>{card.value}</div>
-                    {card.sub && <div style={{ fontSize: 11, color: card.color, marginTop: 4 }}>{card.sub}</div>}
+                  <div key={i}
+                    onClick={() => { setPage('cases'); setStatusFilter(card.filter); }}
+                    style={{
+                      background: 'white', borderRadius: 12,
+                      padding: '16px 18px', border: '1px solid #e0e4f0',
+                      cursor: 'pointer', transition: 'border-color 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = '#2563eb'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = '#e0e4f0'}
+                  >
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>{card.label}</div>
+                    <div style={{ fontSize: 26, fontWeight: 700, color: card.color || '#1e293b' }}>{card.value}</div>
+                    <div style={{ fontSize: 10, color: card.subColor, marginTop: 3 }}>{card.sub}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Recent cases table */}
-              <CasesTable cases={cases.slice(0, 5)} title="Recent cases" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+                <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                    Cases by status
+                  </div>
+                  <div style={{ padding: '14px 18px' }}>
+                    {[
+                      { label: 'Open', value: summary.open, total: summary.total, color: '#2563eb' },
+                      { label: 'In review', value: summary.in_review, total: summary.total, color: '#60a5fa' },
+                      { label: 'Pending', value: summary.pending_approval, total: summary.total, color: '#f59e0b' },
+                      { label: 'Escalated', value: summary.escalated, total: summary.total, color: '#ef4444' },
+                      { label: 'Resolved', value: summary.resolved, total: summary.total, color: '#16a34a' },
+                    ].map((bar, i) => (
+                      <div key={i}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+                          <span>{bar.label}</span><span>{bar.value}</span>
+                        </div>
+                        <div style={{ background: '#f1f5f9', borderRadius: 4, height: 8, marginBottom: 10 }}>
+                          <div style={{
+                            width: `${Math.round((bar.value / bar.total) * 100)}%`,
+                            height: 8, borderRadius: 4, background: bar.color
+                          }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                    Distribution
+                  </div>
+                  <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <svg width="110" height="110" viewBox="0 0 140 140">
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#f1f5f9" strokeWidth="22"/>
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#2563eb" strokeWidth="22"
+                        strokeDasharray={`${(summary.open/summary.total)*339} 339`} strokeDashoffset="0" transform="rotate(-90 70 70)"/>
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#60a5fa" strokeWidth="22"
+                        strokeDasharray={`${(summary.in_review/summary.total)*339} 339`} strokeDashoffset={`-${(summary.open/summary.total)*339}`} transform="rotate(-90 70 70)"/>
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#ef4444" strokeWidth="22"
+                        strokeDasharray={`${(summary.escalated/summary.total)*339} 339`} strokeDashoffset={`-${((summary.open+summary.in_review)/summary.total)*339}`} transform="rotate(-90 70 70)"/>
+                      <circle cx="70" cy="70" r="54" fill="none" stroke="#16a34a" strokeWidth="22"
+                        strokeDasharray={`${(summary.resolved/summary.total)*339} 339`} strokeDashoffset={`-${((summary.open+summary.in_review+summary.escalated)/summary.total)*339}`} transform="rotate(-90 70 70)"/>
+                      <text x="70" y="66" textAnchor="middle" fontSize="20" fontWeight="700" fill="#1e293b">{summary.total}</text>
+                      <text x="70" y="82" textAnchor="middle" fontSize="11" fill="#94a3b8">total</text>
+                    </svg>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {[
+                        { label: 'Open', value: summary.open, color: '#2563eb' },
+                        { label: 'In review', value: summary.in_review, color: '#60a5fa' },
+                        { label: 'Escalated', value: summary.escalated, color: '#ef4444' },
+                        { label: 'Resolved', value: summary.resolved, color: '#16a34a' },
+                      ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                          <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                          <span style={{ color: '#64748b' }}>{item.label}</span>
+                          <span style={{ fontWeight: 600, color: '#1e293b', marginLeft: 'auto' }}>{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <CasesTable cases={cases.slice(0, 5)} title="Recent cases" onSelectCase={setSelectedCase} />
             </>
           )}
 
           {page === 'cases' && (
-            <CasesTable cases={cases} title="All cases" />
+            <CasesTable
+              cases={statusFilter ? cases.filter(c => c.status === statusFilter) : cases}
+              title={statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : 'All cases'}
+              onSelectCase={setSelectedCase}
+              statusFilter={statusFilter}
+              onClearFilter={() => setStatusFilter(null)}
+            />
           )}
         </div>
       </div>
@@ -152,43 +187,103 @@ export default function Dashboard({ token, onLogout }) {
   );
 }
 
-function CasesTable({ cases, title }) {
+function Sidebar({ page, setPage, onLogout, user }) {
   return (
-    <div style={{ background: 'white', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: 14 }}>
-        {title}
+    <div style={{
+      width: 220, background: 'white', borderRight: '1px solid #e0e4f0',
+      display: 'flex', flexDirection: 'column', flexShrink: 0
+    }}>
+      <div style={{ padding: '20px', borderBottom: '1px solid #f0f0f0', fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+        <span style={{ color: '#2563eb' }}>Claims</span> Platform
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <nav style={{ marginTop: 8, flex: 1 }}>
+        {[
+          { id: 'dashboard', label: 'Dashboard' },
+          { id: 'cases', label: 'All cases' },
+        ].map(item => (
+          <div key={item.id} onClick={() => setPage(item.id)} style={{
+            padding: '10px 16px', fontSize: 13, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 10,
+            color: page === item.id ? '#2563eb' : '#64748b',
+            background: page === item.id ? '#eff6ff' : 'transparent',
+            borderRadius: 8, margin: '2px 8px', fontWeight: page === item.id ? 500 : 400
+          }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: page === item.id ? '#2563eb' : '#cbd5e1'
+            }} />
+            {item.label}
+          </div>
+        ))}
+      </nav>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0' }}>
+        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>
+          Signed in as <span style={{ color: '#64748b', fontWeight: 500 }}>{user?.role || 'user'}</span>
+        </div>
+        <button onClick={onLogout} style={{
+          width: '100%', padding: 8, background: '#f8fafc',
+          border: '1px solid #e0e4f0', color: '#64748b',
+          borderRadius: 8, cursor: 'pointer', fontSize: 12
+        }}>Sign out</button>
+      </div>
+    </div>
+  );
+}
+
+function CasesTable({ cases, title, onSelectCase, statusFilter, onClearFilter }) {
+  return (
+    <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
+      <div style={{
+        padding: '14px 18px', borderBottom: '1px solid #f0f0f0',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{title}</span>
+          {statusFilter && (
+            <button onClick={onClearFilter} style={{
+              background: 'none', border: 'none', color: '#94a3b8',
+              fontSize: 12, cursor: 'pointer', textDecoration: 'underline'
+            }}>Clear filter</button>
+          )}
+        </div>
+        <button style={{
+          background: '#2563eb', color: 'white', border: 'none',
+          padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500
+        }}>+ New case</button>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
         <thead>
-          <tr style={{ background: '#fafafa' }}>
+          <tr style={{ background: '#f8fafc' }}>
             {['Title', 'Priority', 'Status', 'SLA Deadline'].map(h => (
-              <th key={h} style={{ padding: '10px 20px', textAlign: 'left', color: 'var(--gray)', fontWeight: 500, fontSize: 12, borderBottom: '1px solid var(--border)' }}>{h}</th>
+              <th key={h} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0' }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {cases.map(c => (
-            <tr key={c.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-              <td style={{ padding: '12px 20px', color: 'var(--dark)', maxWidth: 300 }}>{c.title}</td>
-              <td style={{ padding: '12px 20px' }}>
+            <tr key={c.id}
+              onClick={() => onSelectCase(c.id)}
+              style={{ borderBottom: '1px solid #f8fafc', cursor: 'pointer' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <td style={{ padding: '11px 18px', color: '#334155', maxWidth: 280 }}>{c.title}</td>
+              <td style={{ padding: '11px 18px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: priorityColors[c.priority] }} />
-                  {c.priority}
+                  <span style={{ color: '#64748b' }}>{c.priority}</span>
                 </div>
               </td>
-              <td style={{ padding: '12px 20px' }}>
+              <td style={{ padding: '11px 18px' }}>
                 <span style={{
-                  padding: '3px 10px',
-                  borderRadius: 20,
-                  fontSize: 11,
-                  fontWeight: 500,
+                  padding: '3px 9px', borderRadius: 20, fontSize: 10, fontWeight: 600,
                   background: statusColors[c.status]?.bg,
                   color: statusColors[c.status]?.color
                 }}>
-                  {c.status.replace('_', ' ')}
+                  {c.status.replace(/_/g, ' ')}
                 </span>
               </td>
-              <td style={{ padding: '12px 20px', color: 'var(--gray)' }}>
+              <td style={{ padding: '11px 18px', color: '#94a3b8' }}>
                 {c.sla_deadline ? new Date(c.sla_deadline).toLocaleDateString() : '—'}
               </td>
             </tr>
