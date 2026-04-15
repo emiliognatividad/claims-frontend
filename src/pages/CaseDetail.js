@@ -28,10 +28,11 @@ const priorityColors = {
   low: '#22c55e',
 };
 
-export default function CaseDetail({ token, caseId, onBack }) {
+export default function CaseDetail({ token, user, caseId, onBack }) {
   const [caseData, setCaseData] = useState(null);
   const [comments, setComments] = useState([]);
   const [history, setHistory] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
@@ -41,14 +42,16 @@ export default function CaseDetail({ token, caseId, onBack }) {
 
   const fetchCase = async () => {
     setLoading(true);
-    const [caseRes, commentsRes, historyRes] = await Promise.all([
+    const [caseRes, commentsRes, historyRes, usersRes] = await Promise.all([
       axios.get(`${API}/cases/${caseId}?token=${token}`),
       axios.get(`${API}/cases/${caseId}/comments?token=${token}`),
-      axios.get(`${API}/cases/${caseId}/history?token=${token}`).catch(() => ({ data: [] }))
+      axios.get(`${API}/cases/${caseId}/history?token=${token}`).catch(() => ({ data: [] })),
+      axios.get(`${API}/cases/users/list?token=${token}`).catch(() => ({ data: [] }))
     ]);
     setCaseData(caseRes.data);
     setComments(commentsRes.data);
     setHistory(historyRes.data);
+    setUsers(usersRes.data);
     setLoading(false);
   };
 
@@ -62,6 +65,11 @@ export default function CaseDetail({ token, caseId, onBack }) {
     if (!newComment.trim()) return;
     await axios.post(`${API}/cases/${caseId}/comments?token=${token}`, { body: newComment });
     setNewComment('');
+    fetchCase();
+  };
+
+  const assignCase = async (userId) => {
+    await axios.patch(`${API}/cases/${caseId}/assign?token=${token}&assigned_to=${userId}`);
     fetchCase();
   };
 
@@ -90,7 +98,7 @@ export default function CaseDetail({ token, caseId, onBack }) {
           }}>{caseData.status.replace(/_/g, ' ')}</span>
         </div>
         <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 1.6 }}>{caseData.description}</p>
-        <div style={{ display: 'flex', gap: 24, fontSize: 12, color: '#94a3b8' }}>
+        <div style={{ display: 'flex', gap: 24, fontSize: 12, color: '#94a3b8', flexWrap: 'wrap' }}>
           <div><span style={{ fontWeight: 500, color: '#64748b' }}>Priority: </span>
             <span style={{ color: priorityColors[caseData.priority], fontWeight: 600 }}>{caseData.priority}</span>
           </div>
@@ -101,6 +109,24 @@ export default function CaseDetail({ token, caseId, onBack }) {
             {caseData.sla_deadline ? new Date(caseData.sla_deadline).toLocaleDateString() : '—'}
           </div>
         </div>
+        {user?.role === 'admin' && (
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: '#64748b' }}>Assigned to:</span>
+            <select
+              value={caseData.assigned_to || ''}
+              onChange={e => assignCase(e.target.value)}
+              style={{
+                padding: '5px 10px', border: '1px solid #e0e4f0',
+                borderRadius: 8, fontSize: 12, color: '#334155', outline: 'none'
+              }}
+            >
+              <option value=''>Unassigned</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.full_name} ({u.role})</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Status transition */}
@@ -156,8 +182,8 @@ export default function CaseDetail({ token, caseId, onBack }) {
                 <div key={c.id} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
                     <span style={{ fontWeight: 500, color: '#334155' }}>{c.author_name}</span>
-{' · '}
-{new Date(c.created_at).toLocaleString()}
+                    {' · '}
+                    {new Date(c.created_at).toLocaleString()}
                   </div>
                   <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{c.body}</div>
                 </div>

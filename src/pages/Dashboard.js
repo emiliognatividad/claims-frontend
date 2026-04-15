@@ -62,10 +62,12 @@ export default function Dashboard({ token, user, onLogout }) {
         <Sidebar page={page} setPage={(p) => { setPage(p); setSelectedCase(null); }} onLogout={onLogout} user={user} />
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           <CaseDetail
-            token={token}
-            caseId={selectedCase}
-            onBack={() => { setSelectedCase(null); fetchData(); }}
-          />
+  token={token}
+  user={user}
+  caseId={selectedCase}
+  onBack={() => { setSelectedCase(null); fetchData(); }}
+/>
+
         </div>
       </div>
     );
@@ -192,7 +194,7 @@ export default function Dashboard({ token, user, onLogout }) {
                 onSelectCase={setSelectedCase}
                 onNewCase={() => setShowNewCase(true)}
                 priorityFilter={priorityFilter}
-                onPriorityFilter={(p) => { setPriorityFilter(p); setPage('cases'); }}
+                onPriorityFilter={(p) => setPriorityFilter(p)}
               />
             </>
           )}
