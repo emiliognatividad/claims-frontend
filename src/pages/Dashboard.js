@@ -395,7 +395,14 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
                 </span>
               </td>
               <td style={{ padding: '11px 18px', color: '#94a3b8' }}>
-                {c.sla_deadline ? new Date(c.sla_deadline).toLocaleDateString() : '—'}
+                {c.sla_deadline ? (() => {
+  const deadline = new Date(c.sla_deadline);
+  const now = new Date();
+  const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+  const color = daysLeft < 0 ? '#ef4444' : daysLeft <= 2 ? '#f59e0b' : '#94a3b8';
+  const label = daysLeft < 0 ? ' · overdue' : daysLeft === 0 ? ' · today' : daysLeft === 1 ? ' · tomorrow' : '';
+  return <span style={{ color }}>{deadline.toLocaleDateString()}{label}</span>;
+})() : '—'}
               </td>
             </tr>
           ))}
