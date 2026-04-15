@@ -31,20 +31,24 @@ const priorityColors = {
 export default function CaseDetail({ token, caseId, onBack }) {
   const [caseData, setCaseData] = useState(null);
   const [comments, setComments] = useState([]);
+  const [history, setHistory] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('comments');
 
   useEffect(() => { fetchCase(); }, [caseId]);
 
   const fetchCase = async () => {
     setLoading(true);
-    const [caseRes, commentsRes] = await Promise.all([
+    const [caseRes, commentsRes, historyRes] = await Promise.all([
       axios.get(`${API}/cases/${caseId}?token=${token}`),
-      axios.get(`${API}/cases/${caseId}/comments?token=${token}`)
+      axios.get(`${API}/cases/${caseId}/comments?token=${token}`),
+      axios.get(`${API}/cases/${caseId}/history?token=${token}`).catch(() => ({ data: [] }))
     ]);
     setCaseData(caseRes.data);
     setComments(commentsRes.data);
+    setHistory(historyRes.data);
     setLoading(false);
   };
 
@@ -69,7 +73,6 @@ export default function CaseDetail({ token, caseId, onBack }) {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      {/* Back button */}
       <button onClick={onBack} style={{
         background: 'none', border: 'none', color: '#2563eb',
         fontSize: 13, cursor: 'pointer', marginBottom: 16, padding: 0
@@ -129,39 +132,88 @@ export default function CaseDetail({ token, caseId, onBack }) {
         </div>
       )}
 
-      {/* Comments */}
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px 24px' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>
-          Comments ({comments.length})
+      {/* Tabs */}
+      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0' }}>
+          {['comments', 'audit trail'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              padding: '12px 20px', fontSize: 13, fontWeight: activeTab === tab ? 600 : 400,
+              color: activeTab === tab ? '#2563eb' : '#64748b',
+              background: 'none', border: 'none', cursor: 'pointer',
+              borderBottom: activeTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+              textTransform: 'capitalize'
+            }}>{tab}</button>
+          ))}
         </div>
-        {comments.length === 0 && (
-          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>No comments yet.</div>
-        )}
-        {comments.map(c => (
-          <div key={c.id} style={{
-            padding: '12px 0', borderBottom: '1px solid #f0f0f0'
-          }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
-              {new Date(c.created_at).toLocaleString()}
-            </div>
-            <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{c.body}</div>
-          </div>
-        ))}
-        <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-          <input
-            value={newComment}
-            onChange={e => setNewComment(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addComment()}
-            placeholder="Write a comment..."
-            style={{
-              flex: 1, padding: '9px 14px', border: '1px solid #e0e4f0',
-              borderRadius: 8, fontSize: 13, outline: 'none'
-            }}
-          />
-          <button onClick={addComment} style={{
-            background: '#2563eb', color: 'white', border: 'none',
-            padding: '9px 18px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500
-          }}>Send</button>
+
+        <div style={{ padding: '20px 24px' }}>
+          {activeTab === 'comments' && (
+            <>
+              {comments.length === 0 && (
+                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>No comments yet.</div>
+              )}
+              {comments.map(c => (
+                <div key={c.id} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+                    {new Date(c.created_at).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{c.body}</div>
+                </div>
+              ))}
+              <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+                <input
+                  value={newComment}
+                  onChange={e => setNewComment(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && addComment()}
+                  placeholder="Write a comment..."
+                  style={{
+                    flex: 1, padding: '9px 14px', border: '1px solid #e0e4f0',
+                    borderRadius: 8, fontSize: 13, outline: 'none'
+                  }}
+                />
+                <button onClick={addComment} style={{
+                  background: '#2563eb', color: 'white', border: 'none',
+                  padding: '9px 18px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500
+                }}>Send</button>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'audit trail' && (
+            <>
+              {history.length === 0 && (
+                <div style={{ fontSize: 13, color: '#94a3b8' }}>No history yet.</div>
+              )}
+              {history.map((h, i) => (
+                <div key={h.id} style={{ display: 'flex', gap: 16, paddingBottom: 16, position: 'relative' }}>
+                  {i < history.length - 1 && (
+                    <div style={{
+                      position: 'absolute', left: 11, top: 24,
+                      width: 2, height: '100%', background: '#f0f0f0'
+                    }} />
+                  )}
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%', background: '#eff6ff',
+                    border: '2px solid #2563eb', flexShrink: 0, marginTop: 2
+                  }} />
+                  <div>
+                    <div style={{ fontSize: 13, color: '#334155', marginBottom: 2 }}>
+                      Status changed from{' '}
+                      <span style={{ fontWeight: 600 }}>{h.from_status.replace(/_/g, ' ')}</span>
+                      {' '}to{' '}
+                      <span style={{ fontWeight: 600, color: '#2563eb' }}>{h.to_status.replace(/_/g, ' ')}</span>
+                    </div>
+                    {h.note && (
+                      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>"{h.note}"</div>
+                    )}
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                      {new Date(h.changed_at).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
     </div>
