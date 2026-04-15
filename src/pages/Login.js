@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const API = 'http://54.172.217.112:8000';
+const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
