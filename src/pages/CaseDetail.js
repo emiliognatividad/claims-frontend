@@ -155,7 +155,9 @@ export default function CaseDetail({ token, caseId, onBack }) {
               {comments.map(c => (
                 <div key={c.id} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
                   <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
-                    {new Date(c.created_at).toLocaleString()}
+                    <span style={{ fontWeight: 500, color: '#334155' }}>{c.author_name}</span>
+{' · '}
+{new Date(c.created_at).toLocaleString()}
                   </div>
                   <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{c.body}</div>
                 </div>
