@@ -3,20 +3,39 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
+const CLIENTS = {
+  'E-commerce': ['Mercado Libre', 'Liverpool', 'Amazon México'],
+  'Pharmaceutical': ['Grupo Biopharma', 'Laboratorios Pisa', 'Pfizer México'],
+  'Automotive': ['General Motors México', 'Ford Motor México', 'Toyota de México'],
+  'Retail': ['Walmart de México', 'FEMSA Comercio', 'Grupo Coppel'],
+  'Industrial': ['Grupo Xignux', 'Cemex Logística', 'Vitro Packaging'],
+  'Food & Beverage': ['Grupo Bimbo', 'Grupo Lala', 'Sigma Alimentos'],
+  'Government': ['IMSS', 'SEP', 'Secretaría de Salud'],
+};
+
 export default function NewCase({ token, onBack, onCreated }) {
   const [form, setForm] = useState({
     title: '',
     description: '',
     priority: 'medium',
+    industry: '',
+    client: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const submit = async () => {
     if (!form.title.trim()) { setError('Title is required'); return; }
+    if (!form.industry) { setError('Please select an industry'); return; }
+    if (!form.client) { setError('Please select a client'); return; }
     setLoading(true);
     try {
-      await axios.post(`${API}/cases/?token=${token}`, form);
+      const description = `[${form.industry} — ${form.client}]\n\n${form.description}`;
+      await axios.post(`${API}/cases/?token=${token}`, {
+        title: form.title,
+        description,
+        priority: form.priority,
+      });
       onCreated();
     } catch {
       setError('Failed to create case. Try again.');
@@ -40,16 +59,43 @@ export default function NewCase({ token, onBack, onCreated }) {
           </div>
         )}
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'block', marginBottom: 6 }}>Industry</label>
+            <select
+              value={form.industry}
+              onChange={e => setForm({ ...form, industry: e.target.value, client: '' })}
+              style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', color: '#334155' }}
+            >
+              <option value=''>Select industry</option>
+              {Object.keys(CLIENTS).map(ind => (
+                <option key={ind} value={ind}>{ind}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'block', marginBottom: 6 }}>Client</label>
+            <select
+              value={form.client}
+              onChange={e => setForm({ ...form, client: e.target.value })}
+              disabled={!form.industry}
+              style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', color: '#334155', opacity: !form.industry ? 0.5 : 1 }}
+            >
+              <option value=''>Select client</option>
+              {form.industry && CLIENTS[form.industry].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'block', marginBottom: 6 }}>Title</label>
           <input
             value={form.title}
             onChange={e => setForm({ ...form, title: e.target.value })}
             placeholder="e.g. Shipment #4821 — cargo damaged in transit"
-            style={{
-              width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0',
-              borderRadius: 8, fontSize: 13, outline: 'none'
-            }}
+            style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none' }}
           />
         </div>
 
@@ -60,10 +106,7 @@ export default function NewCase({ token, onBack, onCreated }) {
             onChange={e => setForm({ ...form, description: e.target.value })}
             placeholder="Describe the claim in detail..."
             rows={4}
-            style={{
-              width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0',
-              borderRadius: 8, fontSize: 13, outline: 'none', resize: 'vertical'
-            }}
+            style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', resize: 'vertical' }}
           />
         </div>
 
@@ -85,7 +128,8 @@ export default function NewCase({ token, onBack, onCreated }) {
 
         <button onClick={submit} disabled={loading} style={{
           width: '100%', padding: '12px', background: '#2563eb', color: 'white',
-          border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer'
+          border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          opacity: loading ? 0.7 : 1
         }}>
           {loading ? 'Creating...' : 'Create case'}
         </button>
