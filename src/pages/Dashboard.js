@@ -3,7 +3,7 @@ import axios from 'axios';
 import CaseDetail from './CaseDetail';
 import NewCase from './NewCase';
 
-const API = 'http://localhost:8000';
+const API = 'http://54.172.217.112:8000';
 
 const statusColors = {
   open: { bg: '#eff6ff', color: '#1d4ed8' },
