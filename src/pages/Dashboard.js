@@ -29,6 +29,7 @@ export default function Dashboard({ token, user, onLogout }) {
   const [showNewCase, setShowNewCase] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [priorityFilter, setPriorityFilter] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -62,12 +63,11 @@ export default function Dashboard({ token, user, onLogout }) {
         <Sidebar page={page} setPage={(p) => { setPage(p); setSelectedCase(null); }} onLogout={onLogout} user={user} />
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           <CaseDetail
-  token={token}
-  user={user}
-  caseId={selectedCase}
-  onBack={() => { setSelectedCase(null); fetchData(); }}
-/>
-
+            token={token}
+            user={user}
+            caseId={selectedCase}
+            onBack={() => { setSelectedCase(null); fetchData(); }}
+          />
         </div>
       </div>
     );
@@ -84,7 +84,62 @@ export default function Dashboard({ token, user, onLogout }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
           <h1 style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textTransform: 'capitalize' }}>{page}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+
+            {/* Bell icon with dropdown */}
+            <div style={{ position: 'relative' }}>
+              <div style={{ cursor: 'pointer' }} onClick={() => setShowNotifications(prev => !prev)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {summary && (summary.escalated + summary.pending_approval) > 0 && (
+                  <div style={{
+                    position: 'absolute', top: -6, right: -6,
+                    background: '#ef4444', color: 'white',
+                    borderRadius: '50%', width: 16, height: 16,
+                    fontSize: 10, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {summary.escalated + summary.pending_approval}
+                  </div>
+                )}
+              </div>
+
+              {showNotifications && (
+                <div style={{
+                  position: 'absolute', top: 32, right: 0,
+                  background: 'white', borderRadius: 12, border: '1px solid #e0e4f0',
+                  width: 320, zIndex: 100, overflow: 'hidden',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                    Needs attention
+                  </div>
+                  {cases.filter(c => c.status === 'escalated' || c.status === 'pending_approval').length === 0 && (
+                    <div style={{ padding: '16px', fontSize: 13, color: '#94a3b8' }}>All clear</div>
+                  )}
+                  {cases.filter(c => c.status === 'escalated' || c.status === 'pending_approval').map(c => (
+                    <div key={c.id}
+                      onClick={() => { setSelectedCase(c.id); setShowNotifications(false); }}
+                      style={{ padding: '12px 16px', borderBottom: '1px solid #f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{
+                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                        background: c.status === 'escalated' ? '#ef4444' : '#f59e0b'
+                      }} />
+                      <div>
+                        <div style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{c.title}</div>
+                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.status.replace(/_/g, ' ')}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <span style={{ fontSize: 12, color: '#94a3b8' }}>
               {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
@@ -194,7 +249,7 @@ export default function Dashboard({ token, user, onLogout }) {
                 onSelectCase={setSelectedCase}
                 onNewCase={() => setShowNewCase(true)}
                 priorityFilter={priorityFilter}
-                onPriorityFilter={(p) => setPriorityFilter(p)}
+                onPriorityFilter={(p) => { setPriorityFilter(p); setPage('cases'); }}
               />
             </>
           )}
