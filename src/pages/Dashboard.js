@@ -30,6 +30,7 @@ export default function Dashboard({ token, user, onLogout }) {
   const [statusFilter, setStatusFilter] = useState(null);
   const [priorityFilter, setPriorityFilter] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => { fetchData(); }, []);
 
@@ -73,6 +74,12 @@ export default function Dashboard({ token, user, onLogout }) {
     );
   }
 
+  const filteredCases = cases.filter(c =>
+    (!statusFilter || c.status === statusFilter) &&
+    (!priorityFilter || c.priority === priorityFilter) &&
+    (!search || c.title.toLowerCase().includes(search.toLowerCase()))
+  );
+
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
       <Sidebar page={page} setPage={setPage} onLogout={onLogout} user={user} />
@@ -83,10 +90,20 @@ export default function Dashboard({ token, user, onLogout }) {
           borderBottom: '1px solid #e0e4f0',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
-          <h1 style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textTransform: 'capitalize' }}>{page}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-
-            {/* Bell icon with dropdown */}
+            <h1 style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textTransform: 'capitalize' }}>{page}</h1>
+            <input
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage('cases'); }}
+              placeholder="Search cases..."
+              style={{
+                padding: '7px 14px', border: '1px solid #e0e4f0',
+                borderRadius: 8, fontSize: 13, outline: 'none',
+                width: 220, color: '#334155'
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ position: 'relative' }}>
               <div style={{ cursor: 'pointer' }} onClick={() => setShowNotifications(prev => !prev)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,7 +122,6 @@ export default function Dashboard({ token, user, onLogout }) {
                   </div>
                 )}
               </div>
-
               {showNotifications && (
                 <div style={{
                   position: 'absolute', top: 32, right: 0,
@@ -139,7 +155,6 @@ export default function Dashboard({ token, user, onLogout }) {
                 </div>
               )}
             </div>
-
             <span style={{ fontSize: 12, color: '#94a3b8' }}>
               {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
@@ -256,15 +271,12 @@ export default function Dashboard({ token, user, onLogout }) {
 
           {page === 'cases' && (
             <CasesTable
-              cases={cases.filter(c =>
-                (!statusFilter || c.status === statusFilter) &&
-                (!priorityFilter || c.priority === priorityFilter)
-              )}
-              title={statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : priorityFilter ? `${priorityFilter} priority cases` : 'All cases'}
+              cases={filteredCases}
+              title={search ? `Results for "${search}"` : statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : priorityFilter ? `${priorityFilter} priority cases` : 'All cases'}
               onSelectCase={setSelectedCase}
               statusFilter={statusFilter}
               priorityFilter={priorityFilter}
-              onClearFilter={() => { setStatusFilter(null); setPriorityFilter(null); }}
+              onClearFilter={() => { setStatusFilter(null); setPriorityFilter(null); setSearch(''); }}
               onNewCase={() => setShowNewCase(true)}
               onPriorityFilter={(p) => setPriorityFilter(p)}
             />
