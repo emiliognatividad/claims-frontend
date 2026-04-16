@@ -76,6 +76,71 @@ function StatCard({ label, value, sub, subColor, color, icon, onClick }) {
   );
 }
 
+function HealthPage({ token, summary }) {
+  const [apiStatus, setApiStatus] = useState('checking');
+
+  useEffect(() => {
+    axios.get(`${API}/analytics/summary?token=${token}`)
+      .then(() => setApiStatus('online'))
+      .catch(() => setApiStatus('offline'));
+  }, []);
+
+  return (
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      <h2 style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 20 }}>System health</h2>
+
+      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Services</div>
+        {[
+          { label: 'API Server', status: apiStatus, detail: `${API}` },
+          { label: 'Database', status: apiStatus === 'online' ? 'online' : 'unknown', detail: 'PostgreSQL 15' },
+          { label: 'Frontend', status: 'online', detail: 'React 18' },
+        ].map((s, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < 2 ? '1px solid #f0f0f0' : 'none' }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+              background: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#f59e0b' : '#ef4444'
+            }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>{s.detail}</div>
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20,
+              background: s.status === 'online' ? '#f0fdf4' : s.status === 'checking' ? '#fff7ed' : '#fef2f2',
+              color: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#c2410c' : '#dc2626'
+            }}>{s.status}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Platform stats</div>
+        {summary && [
+          { label: 'Total cases', value: summary.total },
+          { label: 'Open cases', value: summary.open },
+          { label: 'Escalated', value: summary.escalated },
+          { label: 'Resolved', value: summary.resolved },
+        ].map((s, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 3 ? '1px solid #f0f0f0' : 'none', fontSize: 13 }}>
+            <span style={{ color: '#64748b' }}>{s.label}</span>
+            <span style={{ fontWeight: 600, color: '#1e293b' }}>{s.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <a href={`${API}/docs`} target="_blank" rel="noreferrer" style={{
+        display: 'block', width: '100%', padding: '12px',
+        background: '#2563eb', color: 'white', border: 'none',
+        borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+        textAlign: 'center', textDecoration: 'none'
+      }}>
+        Open API Docs (Swagger) ↗
+      </a>
+    </div>
+  );
+}
+
 export default function Dashboard({ token, user, onLogout }) {
   const [cases, setCases] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -310,9 +375,10 @@ export default function Dashboard({ token, user, onLogout }) {
                 <span style={{ color: '#2563eb' }}>Claims</span> Platform
               </div>
               <nav style={{ marginTop: 8, flex: 1 }}>
-                {[{ id: 'dashboard', label: 'Dashboard' }, { id: 'cases', label: `All cases (${cases.length})` }].map(item => (
+                {[{ id: 'dashboard', label: 'Dashboard' }, { id: 'cases', label: `All cases (${cases.length})` }, { id: 'health', label: 'System health' }].map(item => (
                   <div key={item.id} onClick={() => navigateTo(item.id)} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: page === item.id ? '#2563eb' : '#64748b', background: page === item.id ? '#eff6ff' : 'transparent', fontWeight: page === item.id ? 500 : 400 }}>{item.label}</div>
                 ))}
+                <div onClick={() => window.open(`${API}/docs`, '_blank')} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: '#64748b' }}>API Docs ↗</div>
               </nav>
               <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>Signed in as <span style={{ color: '#64748b', fontWeight: 500 }}>{user?.role}</span></div>
@@ -324,6 +390,8 @@ export default function Dashboard({ token, user, onLogout }) {
         )}
 
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '20px 24px' }}>
+          {page === 'health' && <HealthPage token={token} summary={summary} />}
+
           {page === 'dashboard' && summary && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
@@ -445,14 +513,18 @@ function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
         {[
           { id: 'dashboard', label: 'Dashboard', icon: '◉' },
           { id: 'cases', label: 'All cases', icon: '◈', count: caseCount },
+          { id: 'health', label: 'System health', icon: '💚' },
+          { id: 'api', label: 'API Docs', icon: '⚡', external: `${API}/docs` },
         ].map(item => (
-          <div key={item.id} onClick={() => setPage(item.id)} style={{
-            padding: '10px 16px', fontSize: 13, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 10,
-            color: page === item.id ? '#2563eb' : '#64748b',
-            background: page === item.id ? '#eff6ff' : 'transparent',
-            borderRadius: 8, margin: '2px 8px', fontWeight: page === item.id ? 500 : 400
-          }}>
+          <div key={item.id}
+            onClick={() => item.external ? window.open(item.external, '_blank') : setPage(item.id)}
+            style={{
+              padding: '10px 16px', fontSize: 13, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 10,
+              color: page === item.id ? '#2563eb' : '#64748b',
+              background: page === item.id ? '#eff6ff' : 'transparent',
+              borderRadius: 8, margin: '2px 8px', fontWeight: page === item.id ? 500 : 400
+            }}>
             <span style={{ fontSize: 12 }}>{item.icon}</span>
             {item.label}
             {item.count !== undefined && (
@@ -460,6 +532,7 @@ function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
                 {item.count}
               </span>
             )}
+            {item.external && <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>↗</span>}
           </div>
         ))}
       </nav>
@@ -474,7 +547,7 @@ function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
             {user?.role?.[0]?.toUpperCase() || 'U'}
           </div>
           <div>
-            <div style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{user?.role || 'user'}</div>
+            <div style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{user?.email || user?.role || 'user'}</div>
             <div style={{ fontSize: 10, color: '#94a3b8' }}>View profile →</div>
           </div>
         </div>
