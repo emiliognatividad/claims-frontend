@@ -40,8 +40,6 @@ function CreditNoteModal({ caseData, onClose }) {
   const noteNumber = `CN-${String(caseData.id).slice(0, 8).toUpperCase()}`;
   const today = new Date().toLocaleDateString('es-MX');
 
-  const handlePrint = () => window.print();
-
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
@@ -58,62 +56,60 @@ function CreditNoteModal({ caseData, onClose }) {
           fontSize: 18, color: '#94a3b8'
         }}>✕</button>
 
-        <div id="credit-note-content">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b' }}>
-                <span style={{ color: '#2563eb' }}>Claims</span> Platform
-              </div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Logistics operations</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b' }}>
+              <span style={{ color: '#2563eb' }}>Claims</span> Platform
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>CREDIT NOTE</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>{noteNumber}</div>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>{today}</div>
-            </div>
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Logistics operations</div>
           </div>
-
-          <div style={{ borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', padding: '16px 0', marginBottom: 20 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CLIENT</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{client}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>{industry}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CASE REFERENCE</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{caseData.title}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>Priority: {caseData.priority}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
-              <span style={{ color: '#64748b' }}>Claim description</span>
-              <span style={{ color: '#334155', maxWidth: 240, textAlign: 'right' }}>{caseData.title}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
-              <span style={{ color: '#64748b' }}>Case ID</span>
-              <span style={{ color: '#334155', fontFamily: 'monospace', fontSize: 11 }}>{caseData.id}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
-              <span style={{ color: '#64748b' }}>Status</span>
-              <span style={{ color: '#16a34a', fontWeight: 600 }}>Approved</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', fontSize: 15, fontWeight: 700 }}>
-              <span style={{ color: '#1e293b' }}>Total claimed amount</span>
-              <span style={{ color: '#2563eb' }}>{caseData.claimed_amount ? formatMXN(caseData.claimed_amount) : 'Not specified'}</span>
-            </div>
-          </div>
-
-          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', fontSize: 11, color: '#94a3b8', marginBottom: 20 }}>
-            This credit note was generated automatically by Claims Platform upon case approval. Case approved on {today}.
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>CREDIT NOTE</div>
+            <div style={{ fontSize: 12, color: '#64748b' }}>{noteNumber}</div>
+            <div style={{ fontSize: 11, color: '#94a3b8' }}>{today}</div>
           </div>
         </div>
 
+        <div style={{ borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', padding: '16px 0', marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CLIENT</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{client}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>{industry}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CASE REFERENCE</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{caseData.title}</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Priority: {caseData.priority}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+            <span style={{ color: '#64748b' }}>Claim description</span>
+            <span style={{ color: '#334155', maxWidth: 240, textAlign: 'right' }}>{caseData.title}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+            <span style={{ color: '#64748b' }}>Case ID</span>
+            <span style={{ color: '#334155', fontFamily: 'monospace', fontSize: 11 }}>{caseData.id}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+            <span style={{ color: '#64748b' }}>Status</span>
+            <span style={{ color: '#16a34a', fontWeight: 600 }}>Approved</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', fontSize: 15, fontWeight: 700 }}>
+            <span style={{ color: '#1e293b' }}>Total claimed amount</span>
+            <span style={{ color: '#2563eb' }}>{caseData.claimed_amount ? formatMXN(caseData.claimed_amount) : 'Not specified'}</span>
+          </div>
+        </div>
+
+        <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', fontSize: 11, color: '#94a3b8', marginBottom: 20 }}>
+          This credit note was generated automatically by Claims Platform upon case approval. Case approved on {today}.
+        </div>
+
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={handlePrint} style={{
+          <button onClick={() => window.print()} style={{
             flex: 1, padding: '11px', background: '#2563eb', color: 'white',
             border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer'
           }}>Print / Save PDF</button>
@@ -174,7 +170,7 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
   };
 
   if (loading) return (
-    <div style={{ padding: 40, color: '#94a3b8', fontSize: 14 }}>Loading case...</div>
+    <div style={{ padding: 40, color: 'var(--text-muted)', fontSize: 14 }}>Loading case...</div>
   );
 
   const nextStates = TRANSITIONS[caseData.status] || [];
@@ -187,14 +183,14 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
       {showCreditNote && <CreditNoteModal caseData={caseData} onClose={() => setShowCreditNote(false)} />}
 
       <button onClick={onBack} style={{
-        background: 'none', border: 'none', color: '#2563eb',
+        background: 'none', border: 'none', color: 'var(--accent)',
         fontSize: 13, cursor: 'pointer', marginBottom: 16, padding: 0
       }}>← Back to cases</button>
 
       {/* Case header */}
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px 24px', marginBottom: 16 }}>
+      <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '20px 24px', marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1e293b', flex: 1, marginRight: 16 }}>{caseData.title}</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', flex: 1, marginRight: 16 }}>{caseData.title}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {(caseData.status === 'approved' || caseData.status === 'resolved') && (
               <button onClick={() => setShowCreditNote(true)} style={{
@@ -211,35 +207,36 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
             }}>{caseData.status.replace(/_/g, ' ')}</span>
           </div>
         </div>
-        <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 1.6 }}>{caseData.description}</p>
-        <div style={{ display: 'flex', gap: 24, fontSize: 12, color: '#94a3b8', flexWrap: 'wrap' }}>
-          <div><span style={{ fontWeight: 500, color: '#64748b' }}>Priority: </span>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>{caseData.description}</p>
+        <div style={{ display: 'flex', gap: 24, fontSize: 12, flexWrap: 'wrap' }}>
+          <div><span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Priority: </span>
             <span style={{ color: priorityColors[caseData.priority], fontWeight: 600 }}>{caseData.priority}</span>
           </div>
-          {client && <div><span style={{ fontWeight: 500, color: '#64748b' }}>Client: </span>{client}</div>}
-          {industry && <div><span style={{ fontWeight: 500, color: '#64748b' }}>Industry: </span>{industry}</div>}
-          <div><span style={{ fontWeight: 500, color: '#64748b' }}>Created: </span>
-            {new Date(caseData.created_at).toLocaleDateString()}
+          {client && <div><span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Client: </span><span style={{ color: 'var(--text-primary)' }}>{client}</span></div>}
+          {industry && <div><span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Industry: </span><span style={{ color: 'var(--text-primary)' }}>{industry}</span></div>}
+          <div><span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Created: </span>
+            <span style={{ color: 'var(--text-primary)' }}>{new Date(caseData.created_at).toLocaleDateString()}</span>
           </div>
-          <div><span style={{ fontWeight: 500, color: '#64748b' }}>SLA deadline: </span>
-            {caseData.sla_deadline ? new Date(caseData.sla_deadline).toLocaleDateString() : '—'}
+          <div><span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>SLA deadline: </span>
+            <span style={{ color: 'var(--text-primary)' }}>{caseData.sla_deadline ? new Date(caseData.sla_deadline).toLocaleDateString() : '—'}</span>
           </div>
           {caseData.claimed_amount && (
             <div>
-              <span style={{ fontWeight: 500, color: '#64748b' }}>Claimed amount: </span>
-              <span style={{ color: '#2563eb', fontWeight: 600 }}>{formatMXN(caseData.claimed_amount)}</span>
+              <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Claimed amount: </span>
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{formatMXN(caseData.claimed_amount)}</span>
             </div>
           )}
         </div>
         {user?.role === 'admin' && (
           <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: '#64748b' }}>Assigned to:</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>Assigned to:</span>
             <select
               value={caseData.assigned_to || ''}
               onChange={e => assignCase(e.target.value)}
               style={{
-                padding: '5px 10px', border: '1px solid #e0e4f0',
-                borderRadius: 8, fontSize: 12, color: '#334155', outline: 'none'
+                padding: '5px 10px', border: '1px solid var(--card-border)',
+                borderRadius: 8, fontSize: 12, color: 'var(--text-primary)',
+                background: 'var(--input-bg)', outline: 'none'
               }}
             >
               <option value=''>Unassigned</option>
@@ -253,15 +250,16 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
 
       {/* Status transition */}
       {nextStates.length > 0 && (
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px 24px', marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 12 }}>Move case</div>
+        <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '20px 24px', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Move case</div>
           <input
             value={note}
             onChange={e => setNote(e.target.value)}
             placeholder="Add a note (optional)"
             style={{
-              width: '100%', padding: '9px 14px', border: '1px solid #e0e4f0',
-              borderRadius: 8, fontSize: 13, marginBottom: 12, outline: 'none'
+              width: '100%', padding: '9px 14px', border: '1px solid var(--card-border)',
+              borderRadius: 8, fontSize: 13, marginBottom: 12, outline: 'none',
+              background: 'var(--input-bg)', color: 'var(--text-primary)'
             }}
           />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -281,14 +279,14 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
       )}
 
       {/* Tabs */}
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0' }}>
+      <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--card-border)' }}>
           {['comments', 'audit trail'].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: '12px 20px', fontSize: 13, fontWeight: activeTab === tab ? 600 : 400,
-              color: activeTab === tab ? '#2563eb' : '#64748b',
+              color: activeTab === tab ? 'var(--accent)' : 'var(--text-secondary)',
               background: 'none', border: 'none', cursor: 'pointer',
-              borderBottom: activeTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+              borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
               textTransform: 'capitalize'
             }}>{tab}</button>
           ))}
@@ -298,16 +296,16 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
           {activeTab === 'comments' && (
             <>
               {comments.length === 0 && (
-                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 16 }}>No comments yet.</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>No comments yet.</div>
               )}
               {comments.map(c => (
-                <div key={c.id} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
-                    <span style={{ fontWeight: 500, color: '#334155' }}>{c.author_name}</span>
+                <div key={c.id} style={{ padding: '12px 0', borderBottom: '1px solid var(--card-border)' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{c.author_name}</span>
                     {' · '}
                     {new Date(c.created_at).toLocaleString()}
                   </div>
-                  <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{c.body}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>{c.body}</div>
                 </div>
               ))}
               <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
@@ -317,12 +315,13 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
                   onKeyDown={e => e.key === 'Enter' && addComment()}
                   placeholder="Write a comment..."
                   style={{
-                    flex: 1, padding: '9px 14px', border: '1px solid #e0e4f0',
-                    borderRadius: 8, fontSize: 13, outline: 'none'
+                    flex: 1, padding: '9px 14px', border: '1px solid var(--card-border)',
+                    borderRadius: 8, fontSize: 13, outline: 'none',
+                    background: 'var(--input-bg)', color: 'var(--text-primary)'
                   }}
                 />
                 <button onClick={addComment} style={{
-                  background: '#2563eb', color: 'white', border: 'none',
+                  background: 'var(--accent)', color: 'white', border: 'none',
                   padding: '9px 18px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 500
                 }}>Send</button>
               </div>
@@ -332,31 +331,31 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
           {activeTab === 'audit trail' && (
             <>
               {history.length === 0 && (
-                <div style={{ fontSize: 13, color: '#94a3b8' }}>No history yet.</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>No history yet.</div>
               )}
               {history.map((h, i) => (
                 <div key={h.id} style={{ display: 'flex', gap: 16, paddingBottom: 16, position: 'relative' }}>
                   {i < history.length - 1 && (
                     <div style={{
                       position: 'absolute', left: 11, top: 24,
-                      width: 2, height: '100%', background: '#f0f0f0'
+                      width: 2, height: '100%', background: 'var(--card-border)'
                     }} />
                   )}
                   <div style={{
-                    width: 24, height: 24, borderRadius: '50%', background: '#eff6ff',
-                    border: '2px solid #2563eb', flexShrink: 0, marginTop: 2
+                    width: 24, height: 24, borderRadius: '50%', background: 'var(--hover-bg)',
+                    border: '2px solid var(--accent)', flexShrink: 0, marginTop: 2
                   }} />
                   <div>
-                    <div style={{ fontSize: 13, color: '#334155', marginBottom: 2 }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 2 }}>
                       Status changed from{' '}
                       <span style={{ fontWeight: 600 }}>{h.from_status.replace(/_/g, ' ')}</span>
                       {' '}to{' '}
-                      <span style={{ fontWeight: 600, color: '#2563eb' }}>{h.to_status.replace(/_/g, ' ')}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{h.to_status.replace(/_/g, ' ')}</span>
                     </div>
                     {h.note && (
-                      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>"{h.note}"</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>"{h.note}"</div>
                     )}
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                       {new Date(h.changed_at).toLocaleString()}
                     </div>
                   </div>
