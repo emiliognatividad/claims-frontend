@@ -83,16 +83,16 @@ function StatCard({ label, value, sub, subColor, color, onClick }) {
 
   return (
     <div onClick={onClick} style={{
-      background: 'white', borderRadius: 12, padding: '20px',
-      border: '1px solid #e0e4f0', cursor: onClick ? 'pointer' : 'default',
+      background: 'var(--card)', borderRadius: 12, padding: '20px',
+      border: '1px solid var(--card-border)', cursor: onClick ? 'pointer' : 'default',
       display: 'flex', flexDirection: 'column', gap: 8,
     }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = '#2563eb')}
-      onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = '#e0e4f0')}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = 'var(--accent)')}
+      onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = 'var(--card-border)')}
     >
-      <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: color || '#1e293b' }}>{displayed}</div>
-      {sub && <div style={{ fontSize: 11, color: subColor || '#94a3b8' }}>{sub}</div>}
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: color || 'var(--text-primary)' }}>{displayed}</div>
+      {sub && <div style={{ fontSize: 11, color: subColor || 'var(--text-muted)' }}>{sub}</div>}
     </div>
   );
 }
@@ -108,35 +108,35 @@ function HealthPage({ token, summary }) {
 
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      <h2 style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 20 }}>System health</h2>
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Services</div>
+      <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>System health</h2>
+      <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '24px', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>Services</div>
         {[
           { label: 'API Server', status: apiStatus, detail: API },
           { label: 'Database', status: apiStatus === 'online' ? 'online' : 'unknown', detail: 'PostgreSQL 15' },
           { label: 'Frontend', status: 'online', detail: 'React 18' },
         ].map((s, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < 2 ? '1px solid #f0f0f0' : 'none' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--card-border)' : 'none' }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#f59e0b' : '#ef4444' }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>{s.label}</div>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>{s.detail}</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.detail}</div>
             </div>
             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20, background: s.status === 'online' ? '#f0fdf4' : s.status === 'checking' ? '#fff7ed' : '#fef2f2', color: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#c2410c' : '#dc2626' }}>{s.status}</span>
           </div>
         ))}
       </div>
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Platform stats</div>
+      <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '24px', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>Platform stats</div>
         {summary && [
           { label: 'Total cases', value: summary.total },
           { label: 'Open cases', value: summary.open },
           { label: 'Escalated', value: summary.escalated },
           { label: 'Resolved', value: summary.resolved },
         ].map((s, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 3 ? '1px solid #f0f0f0' : 'none', fontSize: 13 }}>
-            <span style={{ color: '#64748b' }}>{s.label}</span>
-            <span style={{ fontWeight: 600, color: '#1e293b' }}>{s.value}</span>
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--card-border)' : 'none', fontSize: 13 }}>
+            <span style={{ color: 'var(--text-secondary)' }}>{s.label}</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.value}</span>
           </div>
         ))}
       </div>
@@ -147,7 +147,7 @@ function HealthPage({ token, summary }) {
   );
 }
 
-export default function Dashboard({ token, user, onLogout }) {
+export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode }) {
   const [cases, setCases] = useState([]);
   const [summary, setSummary] = useState(null);
   const [page, setPage] = useState('dashboard');
@@ -200,13 +200,10 @@ export default function Dashboard({ token, user, onLogout }) {
       setSummary(summaryRes.data);
       setLastRefreshed(new Date());
     } catch (err) {
-      if (err?.response?.status === 401) {
-        onLogout();
-      }
+      if (err?.response?.status === 401) onLogout();
     }
     setLoading(false);
   };
-  
 
   const handleSort = (col) => {
     if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -284,10 +281,7 @@ export default function Dashboard({ token, user, onLogout }) {
   cases.forEach(c => {
     if (c.description) {
       const match = c.description.match(/\[(.+?) — (.+?)\]/);
-      if (match) {
-        const industry = match[1];
-        industryCounts[industry] = (industryCounts[industry] || 0) + 1;
-      }
+      if (match) industryCounts[match[1]] = (industryCounts[match[1]] || 0) + 1;
     }
   });
   const industries = Object.keys(industryCounts);
@@ -312,10 +306,10 @@ export default function Dashboard({ token, user, onLogout }) {
   const activeFilterCount = [statusFilter, priorityFilter, clientFilter, industryFilter, search].filter(Boolean).length;
 
   if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f7ff' }}>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid #e0e4f0', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-        <div style={{ fontSize: 13, color: '#94a3b8' }}>Loading...</div>
+        <div style={{ width: 32, height: 32, border: '3px solid var(--card-border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading...</div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -323,8 +317,8 @@ export default function Dashboard({ token, user, onLogout }) {
 
   if (showProfile) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
-        {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} />}
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
+        {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} darkMode={darkMode} setDarkMode={setDarkMode} />}
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '20px 24px' }}>
           <Profile token={token} user={user} onBack={() => setShowProfile(false)} />
         </div>
@@ -334,8 +328,8 @@ export default function Dashboard({ token, user, onLogout }) {
 
   if (showNewCase) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
-        {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} />}
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
+        {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} darkMode={darkMode} setDarkMode={setDarkMode} />}
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '20px 24px' }}>
           <NewCase token={token} onBack={() => setShowNewCase(false)} onCreated={() => { setShowNewCase(false); fetchData(); }} />
         </div>
@@ -345,8 +339,8 @@ export default function Dashboard({ token, user, onLogout }) {
 
   if (selectedCase) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }}>
-        {!isMobile && <Sidebar page={lastPage} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} />}
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
+        {!isMobile && <Sidebar page={lastPage} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} darkMode={darkMode} setDarkMode={setDarkMode} />}
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '20px 24px' }}>
           <CaseDetail token={token} user={user} caseId={selectedCase} onBack={() => { setSelectedCase(null); setPage(lastPage); fetchData(); }} />
         </div>
@@ -355,29 +349,29 @@ export default function Dashboard({ token, user, onLogout }) {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f5f7ff' }} onClick={() => setShowNotifications(false)}>
-      {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} />}
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }} onClick={() => setShowNotifications(false)}>
+      {!isMobile && <Sidebar page={page} setPage={navigateTo} onLogout={onLogout} user={user} caseCount={cases.length} onProfile={() => setShowProfile(true)} darkMode={darkMode} setDarkMode={setDarkMode} />}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ background: 'white', padding: isMobile ? '12px 16px' : '14px 24px', borderBottom: '1px solid #e0e4f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: 'var(--topbar-bg)', padding: isMobile ? '12px 16px' : '14px 24px', borderBottom: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {isMobile && (
               <button onClick={(e) => { e.stopPropagation(); setShowMobileMenu(prev => !prev); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round">
                   <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
               </button>
             )}
             {isMobile ? (
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#1e293b' }}><span style={{ color: '#2563eb' }}>Claims</span> Platform</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}><span style={{ color: 'var(--accent)' }}>Claims</span> Platform</span>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <h1 style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textTransform: 'capitalize' }}>{page}</h1>
+                <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{page}</h1>
                 <input
                   value={search}
                   onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }}
                   placeholder="Search cases... (or press N)"
-                  style={{ padding: '7px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', width: 260, color: '#334155' }}
+                  style={{ padding: '7px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', width: 260, color: 'var(--text-primary)', background: 'var(--input-bg)' }}
                 />
               </div>
             )}
@@ -386,17 +380,17 @@ export default function Dashboard({ token, user, onLogout }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {!isMobile && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   Refreshed {Math.floor((new Date() - lastRefreshed) / 60000)} min ago
                 </span>
-                <button onClick={fetchData} style={{ background: 'none', border: '1px solid #e0e4f0', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: '#64748b', cursor: 'pointer' }}>
+                <button onClick={fetchData} style={{ background: 'none', border: '1px solid var(--card-border)', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: 'var(--text-secondary)', cursor: 'pointer' }}>
                   Refresh
                 </button>
               </div>
             )}
             <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
               <div style={{ cursor: 'pointer' }} onClick={() => setShowNotifications(prev => !prev)}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
@@ -407,21 +401,21 @@ export default function Dashboard({ token, user, onLogout }) {
                 )}
               </div>
               {showNotifications && (
-                <div style={{ position: 'absolute', top: 32, right: 0, background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', width: 320, zIndex: 100, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>Needs attention</div>
+                <div style={{ position: 'absolute', top: 32, right: 0, background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', width: 320, zIndex: 100, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--card-border)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Needs attention</div>
                   {cases.filter(c => c.status === 'escalated' || c.status === 'pending_approval').length === 0 && (
-                    <div style={{ padding: '16px', fontSize: 13, color: '#94a3b8' }}>All clear</div>
+                    <div style={{ padding: '16px', fontSize: 13, color: 'var(--text-muted)' }}>All clear</div>
                   )}
                   {cases.filter(c => c.status === 'escalated' || c.status === 'pending_approval').map(c => (
                     <div key={c.id} onClick={() => { setLastPage(page); setSelectedCase(c.id); setShowNotifications(false); }}
-                      style={{ padding: '12px 16px', borderBottom: '1px solid #f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                      style={{ padding: '12px 16px', borderBottom: '1px solid var(--card-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-bg)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: c.status === 'escalated' ? '#ef4444' : '#f59e0b' }} />
                       <div>
-                        <div style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{c.title}</div>
-                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.status.replace(/_/g, ' ')} · {getDaysOld(c.created_at)}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>{c.title}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{c.status.replace(/_/g, ' ')} · {getDaysOld(c.created_at)}</div>
                       </div>
                     </div>
                   ))}
@@ -429,7 +423,7 @@ export default function Dashboard({ token, user, onLogout }) {
               )}
             </div>
             {!isMobile && (
-              <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500 }}>
+              <div style={{ background: 'var(--hover-bg)', color: 'var(--accent)', padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, border: '1px solid var(--card-border)' }}>
                 {user?.role || 'user'} · Logistics Claims
               </div>
             )}
@@ -437,27 +431,29 @@ export default function Dashboard({ token, user, onLogout }) {
         </div>
 
         {isMobile && (
-          <div style={{ background: 'white', padding: '8px 16px', borderBottom: '1px solid #e0e4f0' }}>
-            <input value={search} onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }} placeholder="Search cases..." style={{ width: '100%', padding: '8px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', color: '#334155' }} />
+          <div style={{ background: 'var(--topbar-bg)', padding: '8px 16px', borderBottom: '1px solid var(--card-border)' }}>
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }} placeholder="Search cases..." style={{ width: '100%', padding: '8px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--text-primary)', background: 'var(--input-bg)' }} />
           </div>
         )}
 
         {isMobile && showMobileMenu && (
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, display: 'flex' }} onClick={() => setShowMobileMenu(false)}>
-            <div style={{ width: 240, background: 'white', height: '100%', boxShadow: '4px 0 20px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-              <div style={{ padding: '20px', borderBottom: '1px solid #f0f0f0', fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
-                <span style={{ color: '#2563eb' }}>Claims</span> Platform
+            <div style={{ width: 240, background: 'var(--sidebar-bg)', height: '100%', boxShadow: '4px 0 20px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div style={{ padding: '20px', borderBottom: '1px solid var(--card-border)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                <span style={{ color: 'var(--accent)' }}>Claims</span> Platform
               </div>
               <nav style={{ marginTop: 8, flex: 1 }}>
                 {[{ id: 'dashboard', label: 'Dashboard' }, { id: 'cases', label: `All cases (${cases.length})` }, { id: 'health', label: 'System health' }].map(item => (
-                  <div key={item.id} onClick={() => navigateTo(item.id)} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: page === item.id ? '#2563eb' : '#64748b', background: page === item.id ? '#eff6ff' : 'transparent', fontWeight: page === item.id ? 500 : 400 }}>{item.label}</div>
+                  <div key={item.id} onClick={() => navigateTo(item.id)} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: page === item.id ? 'var(--accent)' : 'var(--text-secondary)', background: page === item.id ? 'var(--hover-bg)' : 'transparent', fontWeight: page === item.id ? 500 : 400 }}>{item.label}</div>
                 ))}
-                <div onClick={() => window.open(`${API}/docs`, '_blank')} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: '#64748b' }}>API Docs ↗</div>
+                <div onClick={() => window.open(`${API}/docs`, '_blank')} style={{ padding: '12px 20px', fontSize: 14, cursor: 'pointer', color: 'var(--text-secondary)' }}>API Docs ↗</div>
               </nav>
-              <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>Signed in as <span style={{ color: '#64748b', fontWeight: 500 }}>{user?.role}</span></div>
-                <button onClick={() => { setShowMobileMenu(false); setShowProfile(true); }} style={{ width: '100%', padding: 8, background: '#f8fafc', border: '1px solid #e0e4f0', color: '#64748b', borderRadius: 8, cursor: 'pointer', fontSize: 12, marginBottom: 8 }}>Profile & settings</button>
-                <button onClick={onLogout} style={{ width: '100%', padding: 8, background: '#f8fafc', border: '1px solid #e0e4f0', color: '#64748b', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>Sign out</button>
+              <div style={{ padding: '16px', borderTop: '1px solid var(--card-border)' }}>
+                <button onClick={() => setDarkMode(!darkMode)} style={{ width: '100%', padding: 8, background: 'var(--hover-bg)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 12, marginBottom: 8 }}>
+                  {darkMode ? '☀ Light mode' : '◑ Dark mode'}
+                </button>
+                <button onClick={() => { setShowMobileMenu(false); setShowProfile(true); }} style={{ width: '100%', padding: 8, background: 'var(--hover-bg)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 12, marginBottom: 8 }}>Profile & settings</button>
+                <button onClick={onLogout} style={{ width: '100%', padding: 8, background: 'var(--hover-bg)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>Sign out</button>
               </div>
             </div>
           </div>
@@ -469,37 +465,37 @@ export default function Dashboard({ token, user, onLogout }) {
           {page === 'dashboard' && summary && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
-                <StatCard label="Total cases" value={summary.total} sub={`${resolvedRate}% resolved`} subColor="#2563eb" onClick={() => { setPage('cases'); setStatusFilter(null); }} />
-                <StatCard label="Open" value={summary.open} color="#2563eb" sub="awaiting action" subColor="#94a3b8" onClick={() => { setPage('cases'); setStatusFilter('open'); }} />
+                <StatCard label="Total cases" value={summary.total} sub={`${resolvedRate}% resolved`} subColor="var(--accent)" onClick={() => { setPage('cases'); setStatusFilter(null); }} />
+                <StatCard label="Open" value={summary.open} color="#2563eb" sub="awaiting action" onClick={() => { setPage('cases'); setStatusFilter('open'); }} />
                 <StatCard label="Escalated" value={summary.escalated} color="#ef4444" sub="needs attention" subColor="#ef4444" onClick={() => { setPage('cases'); setStatusFilter('escalated'); }} />
-                <StatCard label="Avg case age" value={`${avgAge}d`} color="#64748b" sub="across all cases" subColor="#94a3b8" />
+                <StatCard label="Avg case age" value={`${avgAge}d`} color="var(--text-secondary)" sub="across all cases" />
               </div>
 
               {!isMobile && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-                  <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>Case volume</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16 }}>Last 7 days</div>
+                  <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '20px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Case volume</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16 }}>Last 7 days</div>
                     <ResponsiveContainer width="100%" height={160}>
                       <LineChart data={last7Days}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                        <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e0e4f0', fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" />
+                        <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--card-border)', fontSize: 12, background: 'var(--card)', color: 'var(--text-primary)' }} />
                         <Line type="monotone" dataKey="cases" stroke="#2563eb" strokeWidth={2} dot={{ fill: '#2563eb', r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
 
-                  <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>Cases by status</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16 }}>Current distribution</div>
+                  <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', padding: '20px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Cases by status</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16 }}>Current distribution</div>
                     <ResponsiveContainer width="100%" height={160}>
                       <BarChart data={statusChartData} barSize={28}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e0e4f0', fontSize: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--card-border)', fontSize: 12, background: 'var(--card)', color: 'var(--text-primary)' }} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                           {statusChartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Bar>
@@ -510,26 +506,26 @@ export default function Dashboard({ token, user, onLogout }) {
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '280px 1fr', gap: 14, marginBottom: 16 }}>
-                <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
-                  <div style={{ padding: '16px 18px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>Top clients</div>
+                <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', overflow: 'hidden' }}>
+                  <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--card-border)', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Top clients</div>
                   <div style={{ padding: '12px 18px' }}>
-                    {topClients.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: '8px 0' }}>No client data yet</div>}
+                    {topClients.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>No client data yet</div>}
                     {topClients.map(([client, count], i) => {
                       const industry = clientIndustry[client];
                       const indColor = industryColors[industry] || '#64748b';
                       return (
                         <div key={client}
                           onClick={() => { setClientFilter(client); setPage('cases'); setCurrentPage(1); }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < topClients.length - 1 ? '1px solid #f8fafc' : 'none', cursor: 'pointer', borderRadius: 6 }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < topClients.length - 1 ? '1px solid var(--card-border)' : 'none', cursor: 'pointer', borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-bg)'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
                           <div style={{ width: 28, height: 28, borderRadius: 8, background: `${indColor}20`, color: indColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
                             {getInitials(client)}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, color: '#334155', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{client}</div>
-                            <div style={{ fontSize: 10, color: '#94a3b8' }}>{count} case{count !== 1 ? 's' : ''} · {industry}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{client}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{count} case{count !== 1 ? 's' : ''} · {industry}</div>
                           </div>
                           <div style={{ fontSize: 12, fontWeight: 600, color: indColor }}>#{i + 1}</div>
                         </div>
@@ -563,9 +559,9 @@ export default function Dashboard({ token, user, onLogout }) {
                   {industries.map(ind => (
                     <button key={ind} onClick={() => { setIndustryFilter(industryFilter === ind ? null : ind); setCurrentPage(1); }} style={{
                       padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                      background: industryFilter === ind ? `${industryColors[ind] || '#64748b'}15` : 'white',
-                      color: industryFilter === ind ? (industryColors[ind] || '#64748b') : '#64748b',
-                      border: `1px solid ${industryFilter === ind ? (industryColors[ind] || '#64748b') : '#e0e4f0'}`
+                      background: industryFilter === ind ? `${industryColors[ind] || '#64748b'}20` : 'var(--card)',
+                      color: industryFilter === ind ? (industryColors[ind] || '#64748b') : 'var(--text-secondary)',
+                      border: `1px solid ${industryFilter === ind ? (industryColors[ind] || '#64748b') : 'var(--card-border)'}`
                     }}>{ind}</button>
                   ))}
                   {activeFilterCount > 0 && (
@@ -611,14 +607,14 @@ export default function Dashboard({ token, user, onLogout }) {
   );
 }
 
-function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
+function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile, darkMode, setDarkMode }) {
   return (
-    <div style={{ width: 220, background: 'white', borderRight: '1px solid #e0e4f0', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-      <div style={{ padding: '20px', borderBottom: '1px solid #f0f0f0' }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', marginBottom: 2 }}>
-          <span style={{ color: '#2563eb' }}>Claims</span> Platform
+    <div style={{ width: 220, background: 'var(--sidebar-bg)', borderRight: '1px solid var(--card-border)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div style={{ padding: '20px', borderBottom: '1px solid var(--card-border)' }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>
+          <span style={{ color: 'var(--accent)' }}>Claims</span> Platform
         </div>
-        <div style={{ fontSize: 11, color: '#94a3b8' }}>Logistics operations</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Logistics operations</div>
       </div>
       <nav style={{ marginTop: 8, flex: 1 }}>
         {[
@@ -632,90 +628,97 @@ function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
             style={{
               padding: '10px 16px', fontSize: 13, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 10,
-              color: page === item.id ? '#2563eb' : '#64748b',
-              background: page === item.id ? '#eff6ff' : 'transparent',
+              color: page === item.id ? 'var(--accent)' : 'var(--text-secondary)',
+              background: page === item.id ? 'var(--hover-bg)' : 'transparent',
               borderRadius: 8, margin: '2px 8px', fontWeight: page === item.id ? 500 : 400
             }}>
             <span style={{ fontSize: 12 }}>{item.icon}</span>
             {item.label}
             {item.count !== undefined && (
-              <span style={{ marginLeft: 'auto', background: '#f1f5f9', color: '#64748b', fontSize: 11, padding: '1px 7px', borderRadius: 10 }}>
+              <span style={{ marginLeft: 'auto', background: 'var(--hover-bg)', color: 'var(--text-secondary)', fontSize: 11, padding: '1px 7px', borderRadius: 10, border: '1px solid var(--card-border)' }}>
                 {item.count}
               </span>
             )}
-            {item.external && <span style={{ marginLeft: 'auto', fontSize: 10, color: '#94a3b8' }}>↗</span>}
+            {item.external && <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)' }}>↗</span>}
           </div>
         ))}
       </nav>
-      <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0' }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid var(--card-border)' }}>
         <div
           onClick={onProfile}
           style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, cursor: 'pointer', borderRadius: 8, padding: '6px 8px' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-bg)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--hover-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, border: '1px solid var(--card-border)' }}>
             {user?.role?.[0]?.toUpperCase() || 'U'}
           </div>
           <div>
-            <div style={{ fontSize: 12, color: '#334155', fontWeight: 500 }}>{user?.email || user?.role || 'user'}</div>
-            <div style={{ fontSize: 10, color: '#94a3b8' }}>View profile →</div>
+            <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>{user?.email || user?.role || 'user'}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>View profile →</div>
           </div>
         </div>
-        <button onClick={onLogout} style={{ width: '100%', padding: 8, background: '#f8fafc', border: '1px solid #e0e4f0', color: '#64748b', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>Sign out</button>
+        <button onClick={() => setDarkMode(!darkMode)} style={{
+          width: '100%', padding: 8, background: 'var(--hover-bg)',
+          border: '1px solid var(--card-border)', color: 'var(--text-secondary)',
+          borderRadius: 8, cursor: 'pointer', fontSize: 12, marginBottom: 8
+        }}>
+          {darkMode ? '☀ Light mode' : '◑ Dark mode'}
+        </button>
+        <button onClick={onLogout} style={{ width: '100%', padding: 8, background: 'var(--hover-bg)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>Sign out</button>
       </div>
     </div>
   );
 }
 
 function SortIcon({ col, sortBy, sortDir }) {
-  if (sortBy !== col) return <span style={{ color: '#cbd5e1', marginLeft: 4 }}>↕</span>;
-  return <span style={{ color: '#2563eb', marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  if (sortBy !== col) return <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>↕</span>;
+  return <span style={{ color: 'var(--accent)', marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>;
 }
 
 function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter, onSort, sortBy, sortDir, showPagination, currentPage, totalPages, totalCount, onPageChange, isMobile, showViewAll, activeFilterCount, onClearAll }) {
   return (
-    <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
-      <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+    <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{title}</span>
-          {showPagination && totalCount > 0 && <span style={{ fontSize: 11, color: '#94a3b8' }}>({totalCount})</span>}
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</span>
+          {showPagination && totalCount > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>({totalCount})</span>}
           {activeFilterCount > 0 && onClearAll && (
-            <button onClick={onClearAll} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Clear all</button>
+            <button onClick={onClearAll} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Clear all</button>
           )}
           {showViewAll && (
-            <button onClick={showViewAll} style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 12, cursor: 'pointer' }}>View all →</button>
+            <button onClick={showViewAll} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}>View all →</button>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {!isMobile && ['high', 'medium', 'low'].map(p => (
             <button key={p} onClick={() => onPriorityFilter && onPriorityFilter(priorityFilter === p ? null : p)} style={{
               padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, cursor: 'pointer',
-              background: priorityFilter === p ? (p === 'high' ? '#fef2f2' : p === 'medium' ? '#fff7ed' : '#f0fdf4') : '#f8fafc',
-              color: priorityFilter === p ? (p === 'high' ? '#dc2626' : p === 'medium' ? '#c2410c' : '#16a34a') : '#64748b',
-              border: `1px solid ${priorityFilter === p ? (p === 'high' ? '#fecaca' : p === 'medium' ? '#fed7aa' : '#bbf7d0') : '#e0e4f0'}`
+              background: priorityFilter === p ? (p === 'high' ? '#fef2f2' : p === 'medium' ? '#fff7ed' : '#f0fdf4') : 'var(--hover-bg)',
+              color: priorityFilter === p ? (p === 'high' ? '#dc2626' : p === 'medium' ? '#c2410c' : '#16a34a') : 'var(--text-secondary)',
+              border: `1px solid ${priorityFilter === p ? (p === 'high' ? '#fecaca' : p === 'medium' ? '#fed7aa' : '#bbf7d0') : 'var(--card-border)'}`
             }}>{p}</button>
           ))}
-          <button onClick={onNewCase} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>+ New</button>
+          <button onClick={onNewCase} style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>+ New</button>
         </div>
       </div>
 
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: isMobile ? 500 : 'auto' }}>
           <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              <th onClick={() => onSort('created')} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <tr style={{ background: 'var(--table-header-bg)' }}>
+              <th onClick={() => onSort('created')} style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 Title <SortIcon col="created" sortBy={sortBy} sortDir={sortDir} />
               </th>
-              <th onClick={() => onSort('priority')} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <th onClick={() => onSort('priority')} style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 Priority <SortIcon col="priority" sortBy={sortBy} sortDir={sortDir} />
               </th>
-              <th onClick={() => onSort('status')} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <th onClick={() => onSort('status')} style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 Status <SortIcon col="status" sortBy={sortBy} sortDir={sortDir} />
               </th>
-              {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0' }}>Client</th>}
-              {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0' }}>Industry</th>}
-              <th onClick={() => onSort('sla')} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)' }}>Client</th>}
+              {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)' }}>Industry</th>}
+              <th onClick={() => onSort('sla')} style={{ padding: '9px 18px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: 11, borderBottom: '1px solid var(--card-border)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 SLA <SortIcon col="sla" sortBy={sortBy} sortDir={sortDir} />
               </th>
             </tr>
@@ -724,8 +727,8 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
             {cases.length === 0 && (
               <tr>
                 <td colSpan={isMobile ? 4 : 6} style={{ padding: '48px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>No cases found</div>
-                  <button onClick={onNewCase} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>No cases found</div>
+                  <button onClick={onNewCase} style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
                     + Create first case
                   </button>
                 </td>
@@ -739,23 +742,18 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
               return (
                 <tr key={c.id}
                   onClick={() => onSelectCase(c.id)}
-                  style={{ borderBottom: '1px solid #f8fafc', cursor: 'pointer', background: c.status === 'escalated' ? '#fff8f8' : 'transparent' }}
-                  onMouseEnter={e => e.currentTarget.style.background = c.status === 'escalated' ? '#fff0f0' : '#f8fafc'}
-                  onMouseLeave={e => e.currentTarget.style.background = c.status === 'escalated' ? '#fff8f8' : 'transparent'}
+                  style={{ borderBottom: '1px solid var(--card-border)', cursor: 'pointer', background: c.status === 'escalated' ? 'rgba(239,68,68,0.05)' : 'transparent' }}
+                  onMouseEnter={e => e.currentTarget.style.background = c.status === 'escalated' ? 'rgba(239,68,68,0.1)' : 'var(--hover-bg)'}
+                  onMouseLeave={e => e.currentTarget.style.background = c.status === 'escalated' ? 'rgba(239,68,68,0.05)' : 'transparent'}
                 >
-                  <td style={{ padding: '11px 18px', color: '#334155', maxWidth: 260 }}>
+                  <td style={{ padding: '11px 18px', color: 'var(--text-primary)', maxWidth: 260 }}>
                     <div style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title}</div>
-{c.claimed_amount && (
-  <div style={{ fontSize: 10, color: '#2563eb', fontWeight: 600, marginTop: 1 }}>
-    {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(c.claimed_amount)}
-  </div>
-)}
-                    <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{getDaysOld(c.created_at)}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{getDaysOld(c.created_at)}</div>
                   </td>
                   <td style={{ padding: '11px 18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: priorityColors[c.priority] }} />
-                      <span style={{ color: '#64748b' }}>{c.priority}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{c.priority}</span>
                     </div>
                   </td>
                   <td style={{ padding: '11px 18px' }}>
@@ -766,15 +764,15 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
                   {!isMobile && (
                     <td style={{ padding: '11px 18px' }}>
                       {clientName ? (
-                        <span style={{ fontSize: 11, color: '#64748b', background: '#f8fafc', padding: '2px 8px', borderRadius: 6, border: '1px solid #e0e4f0' }}>{clientName}</span>
-                      ) : <span style={{ color: '#cbd5e1', fontSize: 11 }}>—</span>}
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', background: 'var(--hover-bg)', padding: '2px 8px', borderRadius: 6, border: '1px solid var(--card-border)' }}>{clientName}</span>
+                      ) : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}
                     </td>
                   )}
                   {!isMobile && (
                     <td style={{ padding: '11px 18px' }}>
                       {industry ? (
                         <span style={{ fontSize: 11, color: indColor, background: `${indColor}15`, padding: '2px 8px', borderRadius: 6, fontWeight: 500 }}>{industry}</span>
-                      ) : <span style={{ color: '#cbd5e1', fontSize: 11 }}>—</span>}
+                      ) : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>}
                     </td>
                   )}
                   <td style={{ padding: '11px 18px' }}>
@@ -790,11 +788,11 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
       </div>
 
       {showPagination && totalPages > 1 && (
-        <div style={{ padding: '12px 18px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#94a3b8' }}>Page {currentPage} of {totalPages}</span>
+        <div style={{ padding: '12px 18px', borderTop: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Page {currentPage} of {totalPages}</span>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => onPageChange(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid #e0e4f0', background: currentPage === 1 ? '#f8fafc' : 'white', color: currentPage === 1 ? '#cbd5e1' : '#334155', cursor: currentPage === 1 ? 'default' : 'pointer', fontSize: 12 }}>Previous</button>
-            <button onClick={() => onPageChange(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid #e0e4f0', background: currentPage === totalPages ? '#f8fafc' : 'white', color: currentPage === totalPages ? '#cbd5e1' : '#334155', cursor: currentPage === totalPages ? 'default' : 'pointer', fontSize: 12 }}>Next</button>
+            <button onClick={() => onPageChange(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--card-border)', background: currentPage === 1 ? 'var(--hover-bg)' : 'var(--card)', color: currentPage === 1 ? 'var(--text-muted)' : 'var(--text-primary)', cursor: currentPage === 1 ? 'default' : 'pointer', fontSize: 12 }}>Previous</button>
+            <button onClick={() => onPageChange(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--card-border)', background: currentPage === totalPages ? 'var(--hover-bg)' : 'var(--card)', color: currentPage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)', cursor: currentPage === totalPages ? 'default' : 'pointer', fontSize: 12 }}>Next</button>
           </div>
         </div>
       )}
