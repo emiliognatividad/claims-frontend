@@ -20,6 +20,16 @@ const statusColors = {
 const priorityColors = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
 const priorityOrder = { high: 0, medium: 1, low: 2 };
 
+const industryColors = {
+  'E-commerce': '#2563eb',
+  'Pharmaceutical': '#7c3aed',
+  'Automotive': '#0891b2',
+  'Retail': '#d97706',
+  'Industrial': '#64748b',
+  'Food & Beverage': '#16a34a',
+  'Government': '#dc2626',
+};
+
 function getInitials(name) {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -56,7 +66,21 @@ function useWindowWidth() {
   return width;
 }
 
-function StatCard({ label, value, sub, subColor, color, icon, onClick }) {
+function StatCard({ label, value, sub, subColor, color, onClick }) {
+  const [displayed, setDisplayed] = useState(0);
+
+  useEffect(() => {
+    if (typeof value !== 'number') { setDisplayed(value); return; }
+    let start = 0;
+    const step = Math.ceil(value / 20);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= value) { setDisplayed(value); clearInterval(timer); }
+      else setDisplayed(start);
+    }, 40);
+    return () => clearInterval(timer);
+  }, [value]);
+
   return (
     <div onClick={onClick} style={{
       background: 'white', borderRadius: 12, padding: '20px',
@@ -66,11 +90,8 @@ function StatCard({ label, value, sub, subColor, color, icon, onClick }) {
       onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = '#2563eb')}
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = '#e0e4f0')}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{label}</span>
-        <span style={{ fontSize: 18 }}>{icon}</span>
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: color || '#1e293b' }}>{value}</div>
+      <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: color || '#1e293b' }}>{displayed}</div>
       {sub && <div style={{ fontSize: 11, color: subColor || '#94a3b8' }}>{sub}</div>}
     </div>
   );
@@ -88,32 +109,23 @@ function HealthPage({ token, summary }) {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }}>
       <h2 style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 20 }}>System health</h2>
-
       <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Services</div>
         {[
-          { label: 'API Server', status: apiStatus, detail: `${API}` },
+          { label: 'API Server', status: apiStatus, detail: API },
           { label: 'Database', status: apiStatus === 'online' ? 'online' : 'unknown', detail: 'PostgreSQL 15' },
           { label: 'Frontend', status: 'online', detail: 'React 18' },
         ].map((s, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < 2 ? '1px solid #f0f0f0' : 'none' }}>
-            <div style={{
-              width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
-              background: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#f59e0b' : '#ef4444'
-            }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#f59e0b' : '#ef4444' }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>{s.label}</div>
               <div style={{ fontSize: 11, color: '#94a3b8' }}>{s.detail}</div>
             </div>
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20,
-              background: s.status === 'online' ? '#f0fdf4' : s.status === 'checking' ? '#fff7ed' : '#fef2f2',
-              color: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#c2410c' : '#dc2626'
-            }}>{s.status}</span>
+            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20, background: s.status === 'online' ? '#f0fdf4' : s.status === 'checking' ? '#fff7ed' : '#fef2f2', color: s.status === 'online' ? '#16a34a' : s.status === 'checking' ? '#c2410c' : '#dc2626' }}>{s.status}</span>
           </div>
         ))}
       </div>
-
       <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '24px', marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 16 }}>Platform stats</div>
         {summary && [
@@ -128,13 +140,7 @@ function HealthPage({ token, summary }) {
           </div>
         ))}
       </div>
-
-      <a href={`${API}/docs`} target="_blank" rel="noreferrer" style={{
-        display: 'block', width: '100%', padding: '12px',
-        background: '#2563eb', color: 'white', border: 'none',
-        borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-        textAlign: 'center', textDecoration: 'none'
-      }}>
+      <a href={`${API}/docs`} target="_blank" rel="noreferrer" style={{ display: 'block', width: '100%', padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center', textDecoration: 'none' }}>
         Open API Docs (Swagger) ↗
       </a>
     </div>
@@ -150,6 +156,8 @@ export default function Dashboard({ token, user, onLogout }) {
   const [showProfile, setShowProfile] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [priorityFilter, setPriorityFilter] = useState(null);
+  const [clientFilter, setClientFilter] = useState(null);
+  const [industryFilter, setIndustryFilter] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [search, setSearch] = useState('');
@@ -157,6 +165,8 @@ export default function Dashboard({ token, user, onLogout }) {
   const [sortDir, setSortDir] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState('dashboard');
+  const [lastRefreshed, setLastRefreshed] = useState(new Date());
+  const [loading, setLoading] = useState(true);
   const pageSize = 10;
   const isMobile = useWindowWidth() < 768;
 
@@ -180,12 +190,15 @@ export default function Dashboard({ token, user, onLogout }) {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     const [casesRes, summaryRes] = await Promise.all([
       axios.get(`${API}/cases/?token=${token}`),
       axios.get(`${API}/analytics/summary?token=${token}`)
     ]);
     setCases(casesRes.data);
     setSummary(summaryRes.data);
+    setLastRefreshed(new Date());
+    setLoading(false);
   };
 
   const handleSort = (col) => {
@@ -193,12 +206,27 @@ export default function Dashboard({ token, user, onLogout }) {
     else { setSortBy(col); setSortDir('asc'); }
   };
 
+  const clearAllFilters = () => {
+    setStatusFilter(null);
+    setPriorityFilter(null);
+    setSearch('');
+    setClientFilter(null);
+    setIndustryFilter(null);
+  };
+
   const filteredCases = cases
-    .filter(c =>
-      (!statusFilter || c.status === statusFilter) &&
-      (!priorityFilter || c.priority === priorityFilter) &&
-      (!search || c.title.toLowerCase().includes(search.toLowerCase()))
-    )
+    .filter(c => {
+      const match = c.description?.match(/\[(.+?) — (.+?)\]/);
+      const industry = match ? match[1] : null;
+      const client = match ? match[2] : null;
+      return (
+        (!statusFilter || c.status === statusFilter) &&
+        (!priorityFilter || c.priority === priorityFilter) &&
+        (!search || c.title.toLowerCase().includes(search.toLowerCase())) &&
+        (!clientFilter || client === clientFilter) &&
+        (!industryFilter || industry === industryFilter)
+      );
+    })
     .sort((a, b) => {
       if (!sortBy) return 0;
       let av, bv;
@@ -231,17 +259,34 @@ export default function Dashboard({ token, user, onLogout }) {
   ] : [];
 
   const clientCounts = {};
+  const clientIndustry = {};
   cases.forEach(c => {
     if (c.description) {
       const match = c.description.match(/\[(.+?) — (.+?)\]/);
       if (match) {
+        const industry = match[1];
         const client = match[2];
         clientCounts[client] = (clientCounts[client] || 0) + 1;
+        clientIndustry[client] = industry;
       }
     }
   });
   const topClients = Object.entries(clientCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const industryCounts = {};
+  cases.forEach(c => {
+    if (c.description) {
+      const match = c.description.match(/\[(.+?) — (.+?)\]/);
+      if (match) {
+        const industry = match[1];
+        industryCounts[industry] = (industryCounts[industry] || 0) + 1;
+      }
+    }
+  });
+  const industries = Object.keys(industryCounts);
+
   const resolvedRate = summary ? Math.round((summary.resolved / summary.total) * 100) : 0;
+  const avgAge = cases.length > 0 ? Math.round(cases.reduce((acc, c) => acc + Math.floor((new Date() - new Date(c.created_at)) / (1000 * 60 * 60 * 24)), 0) / cases.length) : 0;
 
   const navigateTo = (p) => { setPage(p); setShowMobileMenu(false); };
 
@@ -256,6 +301,18 @@ export default function Dashboard({ token, user, onLogout }) {
     if (av > bv) return sortDir === 'asc' ? 1 : -1;
     return 0;
   }).slice(0, 8);
+
+  const activeFilterCount = [statusFilter, priorityFilter, clientFilter, industryFilter, search].filter(Boolean).length;
+
+  if (loading) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f7ff' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #e0e4f0', borderTop: '3px solid #2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+        <div style={{ fontSize: 13, color: '#94a3b8' }}>Loading...</div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   if (showProfile) {
     return (
@@ -320,6 +377,16 @@ export default function Dashboard({ token, user, onLogout }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                  Refreshed {Math.floor((new Date() - lastRefreshed) / 60000)} min ago
+                </span>
+                <button onClick={fetchData} style={{ background: 'none', border: '1px solid #e0e4f0', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: '#64748b', cursor: 'pointer' }}>
+                  Refresh
+                </button>
+              </div>
+            )}
             <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
               <div style={{ cursor: 'pointer' }} onClick={() => setShowNotifications(prev => !prev)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -395,10 +462,10 @@ export default function Dashboard({ token, user, onLogout }) {
           {page === 'dashboard' && summary && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
-                <StatCard label="Total cases" value={summary.total} sub={`${resolvedRate}% resolved`} subColor="#2563eb" icon="📋" onClick={() => { setPage('cases'); setStatusFilter(null); }} />
-                <StatCard label="Open" value={summary.open} color="#2563eb" sub="awaiting action" subColor="#94a3b8" icon="🔵" onClick={() => { setPage('cases'); setStatusFilter('open'); }} />
-                <StatCard label="Escalated" value={summary.escalated} color="#ef4444" sub="needs attention" subColor="#ef4444" icon="🚨" onClick={() => { setPage('cases'); setStatusFilter('escalated'); }} />
-                <StatCard label="Resolved" value={summary.resolved} color="#16a34a" sub="closed cases" subColor="#16a34a" icon="✅" onClick={() => { setPage('cases'); setStatusFilter('resolved'); }} />
+                <StatCard label="Total cases" value={summary.total} sub={`${resolvedRate}% resolved`} subColor="#2563eb" onClick={() => { setPage('cases'); setStatusFilter(null); }} />
+                <StatCard label="Open" value={summary.open} color="#2563eb" sub="awaiting action" subColor="#94a3b8" onClick={() => { setPage('cases'); setStatusFilter('open'); }} />
+                <StatCard label="Escalated" value={summary.escalated} color="#ef4444" sub="needs attention" subColor="#ef4444" onClick={() => { setPage('cases'); setStatusFilter('escalated'); }} />
+                <StatCard label="Avg case age" value={`${avgAge}d`} color="#64748b" sub="across all cases" subColor="#94a3b8" />
               </div>
 
               {!isMobile && (
@@ -440,18 +507,27 @@ export default function Dashboard({ token, user, onLogout }) {
                   <div style={{ padding: '16px 18px', borderBottom: '1px solid #f0f0f0', fontSize: 13, fontWeight: 600, color: '#1e293b' }}>Top clients</div>
                   <div style={{ padding: '12px 18px' }}>
                     {topClients.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: '8px 0' }}>No client data yet</div>}
-                    {topClients.map(([client, count], i) => (
-                      <div key={client} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < topClients.length - 1 ? '1px solid #f8fafc' : 'none' }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-                          {getInitials(client)}
+                    {topClients.map(([client, count], i) => {
+                      const industry = clientIndustry[client];
+                      const indColor = industryColors[industry] || '#64748b';
+                      return (
+                        <div key={client}
+                          onClick={() => { setClientFilter(client); setPage('cases'); setCurrentPage(1); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < topClients.length - 1 ? '1px solid #f8fafc' : 'none', cursor: 'pointer', borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <div style={{ width: 28, height: 28, borderRadius: 8, background: `${indColor}20`, color: indColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                            {getInitials(client)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, color: '#334155', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{client}</div>
+                            <div style={{ fontSize: 10, color: '#94a3b8' }}>{count} case{count !== 1 ? 's' : ''} · {industry}</div>
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: indColor }}>#{i + 1}</div>
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, color: '#334155', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{client}</div>
-                          <div style={{ fontSize: 10, color: '#94a3b8' }}>{count} case{count !== 1 ? 's' : ''}</div>
-                        </div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: '#2563eb' }}>#{i + 1}</div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -474,25 +550,53 @@ export default function Dashboard({ token, user, onLogout }) {
           )}
 
           {page === 'cases' && (
-            <CasesTable
-              cases={pagedCases}
-              title={search ? `Results for "${search}"` : statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` : priorityFilter ? `${priorityFilter} priority cases` : 'All cases'}
-              onSelectCase={(id) => { setLastPage('cases'); setSelectedCase(id); }}
-              statusFilter={statusFilter}
-              priorityFilter={priorityFilter}
-              onClearFilter={() => { setStatusFilter(null); setPriorityFilter(null); setSearch(''); }}
-              onNewCase={() => setShowNewCase(true)}
-              onPriorityFilter={(p) => setPriorityFilter(p)}
-              onSort={handleSort}
-              sortBy={sortBy}
-              sortDir={sortDir}
-              showPagination={true}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalCount={filteredCases.length}
-              onPageChange={setCurrentPage}
-              isMobile={isMobile}
-            />
+            <>
+              {!isMobile && industries.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                  {industries.map(ind => (
+                    <button key={ind} onClick={() => { setIndustryFilter(industryFilter === ind ? null : ind); setCurrentPage(1); }} style={{
+                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                      background: industryFilter === ind ? `${industryColors[ind] || '#64748b'}15` : 'white',
+                      color: industryFilter === ind ? (industryColors[ind] || '#64748b') : '#64748b',
+                      border: `1px solid ${industryFilter === ind ? (industryColors[ind] || '#64748b') : '#e0e4f0'}`
+                    }}>{ind}</button>
+                  ))}
+                  {activeFilterCount > 0 && (
+                    <button onClick={clearAllFilters} style={{ padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontWeight: 500 }}>
+                      Clear all ({activeFilterCount})
+                    </button>
+                  )}
+                </div>
+              )}
+              <CasesTable
+                cases={pagedCases}
+                title={
+                  clientFilter ? `Cases for ${clientFilter}` :
+                  industryFilter ? `${industryFilter} cases` :
+                  search ? `Results for "${search}"` :
+                  statusFilter ? `${statusFilter.replace(/_/g, ' ')} cases` :
+                  priorityFilter ? `${priorityFilter} priority cases` :
+                  'All cases'
+                }
+                onSelectCase={(id) => { setLastPage('cases'); setSelectedCase(id); }}
+                statusFilter={statusFilter}
+                priorityFilter={priorityFilter}
+                onClearFilter={clearAllFilters}
+                onNewCase={() => setShowNewCase(true)}
+                onPriorityFilter={(p) => { setPriorityFilter(p); setCurrentPage(1); }}
+                onSort={handleSort}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                showPagination={true}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={filteredCases.length}
+                onPageChange={setCurrentPage}
+                isMobile={isMobile}
+                activeFilterCount={activeFilterCount}
+                onClearAll={clearAllFilters}
+              />
+            </>
           )}
         </div>
       </div>
@@ -513,8 +617,8 @@ function Sidebar({ page, setPage, onLogout, user, caseCount, onProfile }) {
         {[
           { id: 'dashboard', label: 'Dashboard', icon: '◉' },
           { id: 'cases', label: 'All cases', icon: '◈', count: caseCount },
-          { id: 'health', label: 'System health', icon: '💚' },
-          { id: 'api', label: 'API Docs', icon: '⚡', external: `${API}/docs` },
+          { id: 'health', label: 'System health', icon: '◆' },
+          { id: 'api', label: 'API Docs', icon: '◇', external: `${API}/docs` },
         ].map(item => (
           <div key={item.id}
             onClick={() => item.external ? window.open(item.external, '_blank') : setPage(item.id)}
@@ -562,15 +666,15 @@ function SortIcon({ col, sortBy, sortDir }) {
   return <span style={{ color: '#2563eb', marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>;
 }
 
-function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter, onSort, sortBy, sortDir, showPagination, currentPage, totalPages, totalCount, onPageChange, isMobile, showViewAll }) {
+function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter, onSort, sortBy, sortDir, showPagination, currentPage, totalPages, totalCount, onPageChange, isMobile, showViewAll, activeFilterCount, onClearAll }) {
   return (
     <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', overflow: 'hidden' }}>
       <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{title}</span>
           {showPagination && totalCount > 0 && <span style={{ fontSize: 11, color: '#94a3b8' }}>({totalCount})</span>}
-          {(statusFilter || priorityFilter) && (
-            <button onClick={onClearFilter} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Clear</button>
+          {activeFilterCount > 0 && onClearAll && (
+            <button onClick={onClearAll} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Clear all</button>
           )}
           {showViewAll && (
             <button onClick={showViewAll} style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 12, cursor: 'pointer' }}>View all →</button>
@@ -603,6 +707,7 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
                 Status <SortIcon col="status" sortBy={sortBy} sortDir={sortDir} />
               </th>
               {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0' }}>Client</th>}
+              {!isMobile && <th style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0' }}>Industry</th>}
               <th onClick={() => onSort('sla')} style={{ padding: '9px 18px', textAlign: 'left', color: '#94a3b8', fontWeight: 500, fontSize: 11, borderBottom: '1px solid #f0f0f0', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 SLA <SortIcon col="sla" sortBy={sortBy} sortDir={sortDir} />
               </th>
@@ -610,11 +715,20 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
           </thead>
           <tbody>
             {cases.length === 0 && (
-              <tr><td colSpan={isMobile ? 4 : 5} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>No cases found</td></tr>
+              <tr>
+                <td colSpan={isMobile ? 4 : 6} style={{ padding: '48px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>No cases found</div>
+                  <button onClick={onNewCase} style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+                    + Create first case
+                  </button>
+                </td>
+              </tr>
             )}
             {cases.map(c => {
               const clientMatch = c.description?.match(/\[(.+?) — (.+?)\]/);
+              const industry = clientMatch ? clientMatch[1] : null;
               const clientName = clientMatch ? clientMatch[2] : null;
+              const indColor = industryColors[industry] || '#64748b';
               return (
                 <tr key={c.id}
                   onClick={() => onSelectCase(c.id)}
@@ -641,6 +755,13 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
                     <td style={{ padding: '11px 18px' }}>
                       {clientName ? (
                         <span style={{ fontSize: 11, color: '#64748b', background: '#f8fafc', padding: '2px 8px', borderRadius: 6, border: '1px solid #e0e4f0' }}>{clientName}</span>
+                      ) : <span style={{ color: '#cbd5e1', fontSize: 11 }}>—</span>}
+                    </td>
+                  )}
+                  {!isMobile && (
+                    <td style={{ padding: '11px 18px' }}>
+                      {industry ? (
+                        <span style={{ fontSize: 11, color: indColor, background: `${indColor}15`, padding: '2px 8px', borderRadius: 6, fontWeight: 500 }}>{industry}</span>
                       ) : <span style={{ color: '#cbd5e1', fontSize: 11 }}>—</span>}
                     </td>
                   )}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Landing from './pages/Landing';
 
 function parseToken(token) {
   try {
@@ -13,18 +14,24 @@ function parseToken(token) {
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [showLanding, setShowLanding] = useState(!localStorage.getItem('token'));
   const user = token ? parseToken(token) : null;
 
-  if (!token) {
-    return <Login onLogin={(t) => {
-      localStorage.setItem('token', t);
-      setToken(t);
+  if (showLanding) {
+    return <Landing onEnter={() => setShowLanding(false)} />;
+  }
+
+  if (token) {
+    return <Dashboard token={token} user={user} onLogout={() => {
+      localStorage.removeItem('token');
+      setToken(null);
+      setShowLanding(true);
     }} />;
   }
 
-  return <Dashboard token={token} user={user} onLogout={() => {
-    localStorage.removeItem('token');
-    setToken(null);
+  return <Login onLogin={(t) => {
+    localStorage.setItem('token', t);
+    setToken(t);
   }} />;
 }
 
