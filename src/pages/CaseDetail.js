@@ -28,6 +28,105 @@ const priorityColors = {
   low: '#22c55e',
 };
 
+function formatMXN(amount) {
+  if (!amount) return null;
+  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+}
+
+function CreditNoteModal({ caseData, onClose }) {
+  const clientMatch = caseData.description?.match(/\[(.+?) — (.+?)\]/);
+  const industry = clientMatch ? clientMatch[1] : '—';
+  const client = clientMatch ? clientMatch[2] : '—';
+  const noteNumber = `CN-${String(caseData.id).slice(0, 8).toUpperCase()}`;
+  const today = new Date().toLocaleDateString('es-MX');
+
+  const handlePrint = () => window.print();
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000, padding: 20
+    }}>
+      <div style={{
+        background: 'white', borderRadius: 12, padding: '32px',
+        width: '100%', maxWidth: 520, position: 'relative'
+      }}>
+        <button onClick={onClose} style={{
+          position: 'absolute', top: 16, right: 16,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 18, color: '#94a3b8'
+        }}>✕</button>
+
+        <div id="credit-note-content">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b' }}>
+                <span style={{ color: '#2563eb' }}>Claims</span> Platform
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Logistics operations</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>CREDIT NOTE</div>
+              <div style={{ fontSize: 12, color: '#64748b' }}>{noteNumber}</div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>{today}</div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', padding: '16px 0', marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CLIENT</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{client}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>{industry}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>CASE REFERENCE</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{caseData.title}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>Priority: {caseData.priority}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+              <span style={{ color: '#64748b' }}>Claim description</span>
+              <span style={{ color: '#334155', maxWidth: 240, textAlign: 'right' }}>{caseData.title}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+              <span style={{ color: '#64748b' }}>Case ID</span>
+              <span style={{ color: '#334155', fontFamily: 'monospace', fontSize: 11 }}>{caseData.id}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 13 }}>
+              <span style={{ color: '#64748b' }}>Status</span>
+              <span style={{ color: '#16a34a', fontWeight: 600 }}>Approved</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', fontSize: 15, fontWeight: 700 }}>
+              <span style={{ color: '#1e293b' }}>Total claimed amount</span>
+              <span style={{ color: '#2563eb' }}>{caseData.claimed_amount ? formatMXN(caseData.claimed_amount) : 'Not specified'}</span>
+            </div>
+          </div>
+
+          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', fontSize: 11, color: '#94a3b8', marginBottom: 20 }}>
+            This credit note was generated automatically by Claims Platform upon case approval. Case approved on {today}.
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={handlePrint} style={{
+            flex: 1, padding: '11px', background: '#2563eb', color: 'white',
+            border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer'
+          }}>Print / Save PDF</button>
+          <button onClick={onClose} style={{
+            padding: '11px 20px', background: '#f8fafc',
+            border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, color: '#64748b', cursor: 'pointer'
+          }}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CaseDetail({ token, user, caseId, onBack }) {
   const [caseData, setCaseData] = useState(null);
   const [comments, setComments] = useState([]);
@@ -37,6 +136,7 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('comments');
+  const [showCreditNote, setShowCreditNote] = useState(false);
 
   useEffect(() => { fetchCase(); }, [caseId]);
 
@@ -78,9 +178,14 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
   );
 
   const nextStates = TRANSITIONS[caseData.status] || [];
+  const clientMatch = caseData.description?.match(/\[(.+?) — (.+?)\]/);
+  const client = clientMatch ? clientMatch[2] : null;
+  const industry = clientMatch ? clientMatch[1] : null;
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
+      {showCreditNote && <CreditNoteModal caseData={caseData} onClose={() => setShowCreditNote(false)} />}
+
       <button onClick={onBack} style={{
         background: 'none', border: 'none', color: '#2563eb',
         fontSize: 13, cursor: 'pointer', marginBottom: 16, padding: 0
@@ -90,24 +195,41 @@ export default function CaseDetail({ token, user, caseId, onBack }) {
       <div style={{ background: 'white', borderRadius: 12, border: '1px solid #e0e4f0', padding: '20px 24px', marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1e293b', flex: 1, marginRight: 16 }}>{caseData.title}</h2>
-          <span style={{
-            padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-            background: statusColors[caseData.status]?.bg,
-            color: statusColors[caseData.status]?.color,
-            flexShrink: 0
-          }}>{caseData.status.replace(/_/g, ' ')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {(caseData.status === 'approved' || caseData.status === 'resolved') && (
+              <button onClick={() => setShowCreditNote(true)} style={{
+                padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0'
+              }}>
+                Credit note
+              </button>
+            )}
+            <span style={{
+              padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              background: statusColors[caseData.status]?.bg,
+              color: statusColors[caseData.status]?.color,
+            }}>{caseData.status.replace(/_/g, ' ')}</span>
+          </div>
         </div>
         <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 1.6 }}>{caseData.description}</p>
         <div style={{ display: 'flex', gap: 24, fontSize: 12, color: '#94a3b8', flexWrap: 'wrap' }}>
           <div><span style={{ fontWeight: 500, color: '#64748b' }}>Priority: </span>
             <span style={{ color: priorityColors[caseData.priority], fontWeight: 600 }}>{caseData.priority}</span>
           </div>
+          {client && <div><span style={{ fontWeight: 500, color: '#64748b' }}>Client: </span>{client}</div>}
+          {industry && <div><span style={{ fontWeight: 500, color: '#64748b' }}>Industry: </span>{industry}</div>}
           <div><span style={{ fontWeight: 500, color: '#64748b' }}>Created: </span>
             {new Date(caseData.created_at).toLocaleDateString()}
           </div>
           <div><span style={{ fontWeight: 500, color: '#64748b' }}>SLA deadline: </span>
             {caseData.sla_deadline ? new Date(caseData.sla_deadline).toLocaleDateString() : '—'}
           </div>
+          {caseData.claimed_amount && (
+            <div>
+              <span style={{ fontWeight: 500, color: '#64748b' }}>Claimed amount: </span>
+              <span style={{ color: '#2563eb', fontWeight: 600 }}>{formatMXN(caseData.claimed_amount)}</span>
+            </div>
+          )}
         </div>
         {user?.role === 'admin' && (
           <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>

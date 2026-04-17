@@ -745,6 +745,11 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
                 >
                   <td style={{ padding: '11px 18px', color: '#334155', maxWidth: 260 }}>
                     <div style={{ fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title}</div>
+{c.claimed_amount && (
+  <div style={{ fontSize: 10, color: '#2563eb', fontWeight: 600, marginTop: 1 }}>
+    {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(c.claimed_amount)}
+  </div>
+)}
                     <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{getDaysOld(c.created_at)}</div>
                   </td>
                   <td style={{ padding: '11px 18px' }}>

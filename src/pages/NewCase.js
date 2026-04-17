@@ -20,6 +20,7 @@ export default function NewCase({ token, onBack, onCreated }) {
     priority: 'medium',
     industry: '',
     client: '',
+    claimed_amount: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +36,7 @@ export default function NewCase({ token, onBack, onCreated }) {
         title: form.title,
         description,
         priority: form.priority,
+        claimed_amount: form.claimed_amount ? parseFloat(form.claimed_amount) : null,
       });
       onCreated();
     } catch {
@@ -108,6 +110,25 @@ export default function NewCase({ token, onBack, onCreated }) {
             rows={4}
             style={{ width: '100%', padding: '10px 14px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none', resize: 'vertical' }}
           />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'block', marginBottom: 6 }}>
+            Claimed amount (MXN)
+            <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 400, marginLeft: 6 }}>optional</span>
+          </label>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: '#94a3b8' }}>$</span>
+            <input
+              type="number"
+              value={form.claimed_amount}
+              onChange={e => setForm({ ...form, claimed_amount: e.target.value })}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              style={{ width: '100%', padding: '10px 14px 10px 28px', border: '1px solid #e0e4f0', borderRadius: 8, fontSize: 13, outline: 'none' }}
+            />
+          </div>
         </div>
 
         <div style={{ marginBottom: 24 }}>
