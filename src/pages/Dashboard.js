@@ -191,15 +191,22 @@ export default function Dashboard({ token, user, onLogout }) {
 
   const fetchData = async () => {
     setLoading(true);
-    const [casesRes, summaryRes] = await Promise.all([
-      axios.get(`${API}/cases/?token=${token}`),
-      axios.get(`${API}/analytics/summary?token=${token}`)
-    ]);
-    setCases(casesRes.data);
-    setSummary(summaryRes.data);
-    setLastRefreshed(new Date());
+    try {
+      const [casesRes, summaryRes] = await Promise.all([
+        axios.get(`${API}/cases/?token=${token}`),
+        axios.get(`${API}/analytics/summary?token=${token}`)
+      ]);
+      setCases(casesRes.data);
+      setSummary(summaryRes.data);
+      setLastRefreshed(new Date());
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        onLogout();
+      }
+    }
     setLoading(false);
   };
+  
 
   const handleSort = (col) => {
     if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
