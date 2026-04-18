@@ -66,8 +66,35 @@ function useWindowWidth() {
   return width;
 }
 
+function exportToCSV(cases) {
+  const rows = cases.map(c => {
+    const match = c.description?.match(/\[(.+?) — (.+?)\]/);
+    const industry = match ? match[1] : '';
+    const client = match ? match[2] : '';
+    return [
+      c.id,
+      `"${c.title.replace(/"/g, '""')}"`,
+      c.status,
+      c.priority,
+      client,
+      industry,
+      c.claimed_amount || '',
+      new Date(c.created_at).toLocaleDateString(),
+      c.sla_deadline ? new Date(c.sla_deadline).toLocaleDateString() : '',
+    ].join(',');
+  });
+  const csv = ['ID,Title,Status,Priority,Client,Industry,Claimed Amount,Created,SLA Deadline', ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `claims-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function StatCard({ label, value, sub, subColor, color, onClick }) {
-  const [displayed, setDisplayed] = useState(0);
+ const [displayed, setDisplayed] = useState('');
 
   useEffect(() => {
     if (typeof value !== 'number') { setDisplayed(value); return; }
@@ -223,10 +250,15 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
       const match = c.description?.match(/\[(.+?) — (.+?)\]/);
       const industry = match ? match[1] : null;
       const client = match ? match[2] : null;
+      const searchLower = search.toLowerCase();
       return (
         (!statusFilter || c.status === statusFilter) &&
         (!priorityFilter || c.priority === priorityFilter) &&
-        (!search || c.title.toLowerCase().includes(search.toLowerCase())) &&
+        (!search || 
+          c.title.toLowerCase().includes(searchLower) ||
+          (client && client.toLowerCase().includes(searchLower)) ||
+          (industry && industry.toLowerCase().includes(searchLower))
+        ) &&
         (!clientFilter || client === clientFilter) &&
         (!industryFilter || industry === industryFilter)
       );
@@ -288,6 +320,7 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
 
   const resolvedRate = summary ? Math.round((summary.resolved / summary.total) * 100) : 0;
   const avgAge = cases.length > 0 ? Math.round(cases.reduce((acc, c) => acc + Math.floor((new Date() - new Date(c.created_at)) / (1000 * 60 * 60 * 24)), 0) / cases.length) : 0;
+  const totalClaimed = cases.reduce((acc, c) => acc + (c.claimed_amount || 0), 0);
 
   const navigateTo = (p) => { setPage(p); setShowMobileMenu(false); };
 
@@ -370,8 +403,8 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
                 <input
                   value={search}
                   onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }}
-                  placeholder="Search cases... (or press N)"
-                  style={{ padding: '7px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', width: 260, color: 'var(--text-primary)', background: 'var(--input-bg)' }}
+                  placeholder="Search by title, client, industry..."
+                  style={{ padding: '7px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', width: 280, color: 'var(--text-primary)', background: 'var(--input-bg)' }}
                 />
               </div>
             )}
@@ -432,7 +465,7 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
 
         {isMobile && (
           <div style={{ background: 'var(--topbar-bg)', padding: '8px 16px', borderBottom: '1px solid var(--card-border)' }}>
-            <input value={search} onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }} placeholder="Search cases..." style={{ width: '100%', padding: '8px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--text-primary)', background: 'var(--input-bg)' }} />
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage('cases'); setCurrentPage(1); }} placeholder="Search by title, client, industry..." style={{ width: '100%', padding: '8px 14px', border: '1px solid var(--card-border)', borderRadius: 8, fontSize: 13, outline: 'none', color: 'var(--text-primary)', background: 'var(--input-bg)' }} />
           </div>
         )}
 
@@ -468,7 +501,13 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
                 <StatCard label="Total cases" value={summary.total} sub={`${resolvedRate}% resolved`} subColor="var(--accent)" onClick={() => { setPage('cases'); setStatusFilter(null); }} />
                 <StatCard label="Open" value={summary.open} color="#2563eb" sub="awaiting action" onClick={() => { setPage('cases'); setStatusFilter('open'); }} />
                 <StatCard label="Escalated" value={summary.escalated} color="#ef4444" sub="needs attention" subColor="#ef4444" onClick={() => { setPage('cases'); setStatusFilter('escalated'); }} />
-                <StatCard label="Avg case age" value={`${avgAge}d`} color="var(--text-secondary)" sub="across all cases" />
+                <StatCard
+                  label="Total claimed"
+                  value={totalClaimed > 0 ? new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(totalClaimed) : '—'}
+                  color="#f59e0b"
+                  sub="across all cases"
+                  subColor="#94a3b8"
+                />
               </div>
 
               {!isMobile && (
@@ -598,6 +637,7 @@ export default function Dashboard({ token, user, onLogout, darkMode, setDarkMode
                 isMobile={isMobile}
                 activeFilterCount={activeFilterCount}
                 onClearAll={clearAllFilters}
+                onExport={() => exportToCSV(filteredCases)}
               />
             </>
           )}
@@ -676,7 +716,7 @@ function SortIcon({ col, sortBy, sortDir }) {
   return <span style={{ color: 'var(--accent)', marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>;
 }
 
-function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter, onSort, sortBy, sortDir, showPagination, currentPage, totalPages, totalCount, onPageChange, isMobile, showViewAll, activeFilterCount, onClearAll }) {
+function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, onClearFilter, onNewCase, onPriorityFilter, onSort, sortBy, sortDir, showPagination, currentPage, totalPages, totalCount, onPageChange, isMobile, showViewAll, activeFilterCount, onClearAll, onExport }) {
   return (
     <div style={{ background: 'var(--card)', borderRadius: 12, border: '1px solid var(--card-border)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -699,6 +739,9 @@ function CasesTable({ cases, title, onSelectCase, statusFilter, priorityFilter, 
               border: `1px solid ${priorityFilter === p ? (p === 'high' ? '#fecaca' : p === 'medium' ? '#fed7aa' : '#bbf7d0') : 'var(--card-border)'}`
             }}>{p}</button>
           ))}
+          {onExport && (
+            <button onClick={onExport} style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)', border: '1px solid var(--card-border)', padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>↓ CSV</button>
+          )}
           <button onClick={onNewCase} style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>+ New</button>
         </div>
       </div>
